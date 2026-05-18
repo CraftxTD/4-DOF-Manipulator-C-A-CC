@@ -159,9 +159,12 @@ function calculate.process(raw)
 	gravity = vector.new(gravity[1][1], gravity[2][1], gravity[3][1])
 
 	-- Calculate (normal x angle) x gravity
-	local cross_product = cross(cross(normal, angle), gravity)
-	ship_xz = math.atan2(cross_product.z, cross_product.x)
-	print(string.format("xz vector: (%f, %f, %f)", cross_product.x, cross_product.y, cross_product.z))
+	local local_cross = cross(cross(normal, angle), gravity)
+	local global_cross = matrix:new({ { local_cross.x }, { local_cross.y }, { local_cross.z } })
+	global_cross = matrix.mul(invert_Rz, matrix.mul(invert_Rx, global_cross))
+	global_cross = vector.new(global_cross[1][1], global_cross[2][1], global_cross[3][1])
+	ship_xz = math.atan2(global_cross.z, global_cross.x)
+	print(string.format("xz vector: (%f, %f, %f)", global_cross.x, global_cross.y, global_cross.z))
 	print(string.format("ship_xz: %f", math.deg(ship_xz)))
 
 	Ry = matrix:new({
