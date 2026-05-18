@@ -4,7 +4,7 @@ local matrix = require("libs.matrix")
 local calculate = {}
 -- Ship angles
 -- Z in inverted direction
-local Rz, Ry, Rx, invert_Rz, invert_Ry, invert_Rx
+local rotation_matrix
 
 local function quadrant(a, b)
 	local angle = math.atan2(b, a)
@@ -38,11 +38,11 @@ end
 -- Calculate the rotation matrix based off the offsets
 -- Takes block vector offset as value (distance of block from master computer)
 -- Takes a vector object, converts into matrix form, then returns vector object.
+
 local function get_offset(block_offset)
 	local offset_vector = matrix:new({ { block_offset.x }, { block_offset.y }, { block_offset.z } })
 	-- Convention YXZ
-	local rotation_order = matrix.mul(Ry, matrix.mul(Rx, Rz))
-	offset_vector = matrix.mul(rotation_order, offset_vector)
+	offset_vector = matrix.mul(rotation_matrix, offset_vector)
 	return vector.new(offset_vector[1][1], offset_vector[2][1], offset_vector[3][1])
 end
 
@@ -50,8 +50,7 @@ end
 local function invert_rotate(angle_vector)
 	local rotated_vector = matrix:new({ { angle_vector.x }, { angle_vector.y }, { angle_vector.z } })
 	-- Convention ZXY with negative angles
-	local rotation_order = matrix.mul(invert_Rz, matrix.mul(invert_Rx, invert_Ry))
-	rotated_vector = matrix.mul(rotation_order, rotated_vector)
+	rotated_vector = matrix.mul(matrix.transpose(rotation_matrix), rotated_vector)
 	return vector.new(rotated_vector[1][1], rotated_vector[2][1], rotated_vector[3][1])
 end
 
@@ -130,6 +129,7 @@ function calculate.process(raw)
 	-- normal = vector.new(0, 1, 0)
 
 	-- Initialize the rotation matrices and their inverse rotations
+	local Rz, Rx, Ry
 	Rz = matrix:new({
 		{ math.cos(ship_xy), -math.sin(ship_xy), 0 },
 		{ math.sin(ship_xy), math.cos(ship_xy), 0 },
@@ -140,16 +140,6 @@ function calculate.process(raw)
 		{ 0, math.cos(ship_zy), -math.sin(ship_zy) },
 		{ 0, math.sin(ship_zy), math.cos(ship_zy) },
 	})
-	invert_Rz = matrix:new({
-		{ math.cos(-ship_xy), -math.sin(-ship_xy), 0 },
-		{ math.sin(-ship_xy), math.cos(-ship_xy), 0 },
-		{ 0, 0, 1 },
-	})
-	invert_Rx = matrix:new({
-		{ 1, 0, 0 },
-		{ 0, math.cos(-ship_zy), -math.sin(-ship_zy) },
-		{ 0, math.sin(-ship_zy), math.cos(-ship_zy) },
-	})
 
 	local normal = vector.new(0, 1, 0)
 	local angle = vector.new(math.cos(raw.north), 0, -math.sin(raw.north))
@@ -159,11 +149,11 @@ function calculate.process(raw)
 	gravity = vector.new(gravity[1][1], gravity[2][1], gravity[3][1])
 
 	-- Calculate (normal x angle) x gravity
-	local local_cross = cross(cross(normal, angle), gravity)
+	local local_cross = cross(gravity, cross(normal, angle))
 	local global_cross = matrix:new({ { local_cross.x }, { local_cross.y }, { local_cross.z } })
 	global_cross = matrix.mul(invert_Rz, matrix.mul(invert_Rx, global_cross))
 	global_cross = vector.new(global_cross[1][1], global_cross[2][1], global_cross[3][1])
-	ship_xz = math.atan2(global_cross.z, global_cross.x)
+	ship_xz = math.atan2(-global_cross.z, global_cross.x) - math.pi / 2
 	print(string.format("xz vector: (%f, %f, %f)", global_cross.x, global_cross.y, global_cross.z))
 	print(string.format("ship_xz: %f", math.deg(ship_xz)))
 
@@ -172,11 +162,8 @@ function calculate.process(raw)
 		{ 0, 1, 0 },
 		{ -math.sin(ship_xz), 0, -math.cos(ship_xz) },
 	})
-	invert_Ry = matrix:new({
-		{ math.cos(-ship_xz), 0, -math.sin(-ship_xz) },
-		{ 0, 1, 0 },
-		{ -math.sin(-ship_xz), 0, -math.cos(-ship_xz) },
-	})
+	-- Convention YXZ
+	rotation_matrix = matrix.mul(Ry, matrix.mul(Rx, Rz))
 
 	-- TODO: Rotate the xz vector too
 	local height_vector, x, z, y, xy_vector, zy_vector, z_deg, x_deg
