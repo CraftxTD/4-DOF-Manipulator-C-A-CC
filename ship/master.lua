@@ -37,9 +37,7 @@ while true do
 		slave2 = network.poll(channels.SHIP_SLAVE2, 1)
 		local raw = {
 			xy = peripheral.wrap("left").getRelativeAngle(),
-			north_xz = peripheral.wrap("bottom").getRelativeAngle(),
-			north_xy = slave1.north,
-			north_zy = slave2.north,
+			north = slave1.north,
 			zy = slave1.zy,
 			altitude = slave2.altitude,
 			gimbal = slave2.gimbal,

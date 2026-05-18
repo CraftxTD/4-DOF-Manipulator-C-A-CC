@@ -1,7 +1,7 @@
 package.path = package.path .. ";/?.lua"
 local channels = require("protocols.channels")
 local modem = peripheral.find("modem") or error("No modem", 0)
-local north = peripheral.wrap("bottom")
+local north = peripheral.wrap("left")
 local zy = peripheral.wrap("right")
 
 while true do
