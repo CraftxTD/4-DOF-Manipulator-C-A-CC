@@ -24,9 +24,10 @@ return {
 	-- Ship peripheral offset values
 	-- z is pointing towards the inverted direction
 	BLOCK_OFFSETS = {
-		ZY = vector.new(1, 0, -1),
-		XY = vector.new(-1, 0, 0),
-		ZX = vector.new(-1, 0, -1),
+		-- Z, X, Y are the normal vectors of the corresponding navigation tables
+		Z = vector.new(1, 0, 0),
+		X = vector.new(-1, 0, 0),
+		Y = vector.new(-1, 0, 1),
 		ALTITUDE = vector.new(-1, 0, -2),
 	},
 }

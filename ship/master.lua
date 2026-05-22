@@ -27,6 +27,11 @@ local relay_lever = "bottom"
 -- comparator value from the dock connector.
 local relay_check_dock = "right"
 
+-- x and z normal vectors of corresponding nav tables
+local x, z
+x = peripheral.wrap("left")
+z = peripheral.wrap("right")
+
 while true do
 	-- Check if docked
 	if redstone.getInput(relay_lever) then
@@ -36,15 +41,17 @@ while true do
 		slave1 = network.poll(channels.SHIP_SLAVE1, 1)
 		slave2 = network.poll(channels.SHIP_SLAVE2, 1)
 		local raw = {
-			xy = peripheral.wrap("left").getRelativeAngle(),
+			x = x.getRelativeAngle(),
+			y = slave1.y,
+			z = z.getRelativeAngle(),
 			north = slave1.north,
-			zy = slave1.zy,
 			altitude = slave2.altitude,
 			gimbal = slave2.gimbal,
 			dock_offset = dock_offset,
 		}
-		print(string.format("raw xy: %f", raw.xy))
-		print(string.format("raw zy: %f", raw.zy))
+		print(string.format("raw x: %f", raw.x))
+		print(string.format("raw y: %f", raw.y))
+		print(string.format("raw z: %f", raw.z))
 		print(string.format("raw altitude: %f", raw.altitude))
 
 		local processed = calculate.process(raw)

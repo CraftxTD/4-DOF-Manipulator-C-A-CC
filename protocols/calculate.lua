@@ -14,6 +14,18 @@ local function quadrant(a, b)
 	return angle
 end
 
+-- Gives dot product given a vector type or matrix type.
+-- Assumes both variables are the same type.
+local function dot(a, b)
+	for _, axis in ipairs(a) do
+		if type(axis) == "number" then
+			return a.x * b.x + a.y * b.y + a.z * b.z
+		else
+			return a[1][1] * b[1][1] + a[2][1] * b[2][1] + a[3][1] * b[3][1]
+		end
+	end
+end
+
 -- NOTE: Cross product strategy
 -- Finds the cross product using matrix lib given vector parameters
 local function cross(a, b)
@@ -22,18 +34,6 @@ local function cross(a, b)
 	local product = matrix.cross(v_a, v_b)
 	return vector.new(product[1][1], product[2][1], product[3][1])
 end
-
--- NOTE: Invert rotation matrix strategy (UNUSED)
--- Finds the yaw given the gimbal angles and the yaw vector
--- (the local vector of the combined angles of all 3 magnet
--- navigation tables)
--- local function get_yaw(yaw_vector)
--- 	local rotated_vector = matrix:new({ { yaw_vector.x }, { yaw_vector.y }, { yaw_vector.z } })
--- 	-- Rotate by X, then by Z
--- 	local rotation_order = matrix.mul(invert_Rz, invert_Rx)
--- 	rotated_vector = matrix.mul(rotation_order, rotated_vector)
--- 	return vector.new(rotated_vector[1][1], rotated_vector[2][1], rotated_vector[3][1])
--- end
 
 -- Calculate the rotation matrix based off the offsets
 -- Takes block vector offset as value (distance of block from master computer)
@@ -100,33 +100,40 @@ end
 -- Uses the raw values and produces the dock vector
 function calculate.process(raw)
 	-- Convert every raw value except gimbals into rad
-	raw.zy = math.rad(raw.zy)
-	raw.xy = math.rad(raw.xy)
+	raw.z = math.pi - math.rad(raw.z)
+	raw.y = math.pi - math.rad(raw.y)
+	raw.x = math.pi - math.rad(raw.x)
 	raw.north = math.rad(raw.north)
-
-	-- Initialize base coordinates
-	local zy, xy
-	if raw.zy > math.pi / 2 then
-		zy = math.pi - raw.zy
-	else
-		zy = math.pi / 2 - raw.zy
-	end
-
-	if raw.xy > math.pi / 2 then
-		xy = math.pi - raw.xy
-	else
-		xy = math.pi / 2 - raw.xy
-	end
 
 	-- Gimbal, xy is flipped
 	local ship_xy, ship_zy, ship_xz, yaw_vector
 	ship_xy = -math.rad(raw.gimbal[2])
 	ship_zy = math.rad(raw.gimbal[1])
 
-	-- NOTE: Cross product strategy
-	-- ship_xz = 2 * math.pi - raw.north
-	-- north_table = vector.new(math.cos(raw.north), 0, -math.sin(raw.north))
-	-- normal = vector.new(0, 1, 0)
+	z_vector = vector.new(math.cos(raw.z), math.sin(raw.z), 0)
+	local z_vector, y_vector, x_vector, nav_matrix, dot_vector, dir_vector
+	y_vector = vector.new(math.cos(raw.y), 0, -math.sin(raw.y))
+	x_vector = vector.new(0, math.sin(raw.x), math.cos(raw.x))
+
+	nav_matrix = matrix:new({
+		{ x_vector.x, x_vector.y, x_vector.z },
+		{ y_vector.x, y_vector.y, y_vector.z },
+		{ z_vector.x, z_vector.y, z_vector.z },
+	})
+
+	dot_vector = vector.new(
+		dot(x_vector, raw.dock_offset - geometry.BLOCK_OFFSETS.X),
+		dot(y_vector, raw.dock_offset - geometry.BLOCK_OFFSETS.Y),
+		dot(z_vector, raw.dock_offset - geometry.BLOCK_OFFSETS.Z)
+	)
+
+	dot_vector = matrix:new({ { dot_vector.x }, { dot_vector.y }, { dot_vector.z } })
+	dir_vector = matrix.mul(matrix.transpose(nav_matrix), dot_vector)
+	dir_vector = vector.new(-dir_vector[1][1], -dir_vector[2][1], -dir_vector[3][1])
+	print(string.format("Direction vector x: %f, y: %f, z: %f", dir_vector.x, dir_vector.y, dir_vector.z))
+	local dock_vector =
+		vector.new(geometry.CENTER_X + dir_vector.x, geometry.CENTER_Y + dir_vector.y, geometry.CENTER_Z + dir_vector.z)
+	print(string.format("Dock vector x: %f, y: %f, z: %f", dock_vector.x, dock_vector.y, dock_vector.z))
 
 	-- Initialize the rotation matrices and their inverse rotations
 	local Rz, Rx, Ry
@@ -151,7 +158,7 @@ function calculate.process(raw)
 	-- Calculate (normal x angle) x gravity
 	local local_cross = cross(gravity, cross(normal, angle))
 	local global_cross = matrix:new({ { local_cross.x }, { local_cross.y }, { local_cross.z } })
-	global_cross = matrix.mul(invert_Rz, matrix.mul(invert_Rx, global_cross))
+	global_cross = matrix.mul(matrix.transpose(Rz), matrix.mul(matrix.transpose(Rx), global_cross))
 	global_cross = vector.new(global_cross[1][1], global_cross[2][1], global_cross[3][1])
 	ship_xz = math.atan2(-global_cross.z, global_cross.x) - math.pi / 2
 	print(string.format("xz vector: (%f, %f, %f)", global_cross.x, global_cross.y, global_cross.z))
@@ -166,45 +173,43 @@ function calculate.process(raw)
 	rotation_matrix = matrix.mul(Ry, matrix.mul(Rx, Rz))
 
 	-- TODO: Rotate the xz vector too
-	local height_vector, x, z, y, xy_vector, zy_vector, z_deg, x_deg
+	local height_vector, x, z, y, z_deg, x_deg
 
-	xy_vector = invert_rotate(vector.new(math.cos(xy), math.sin(xy), 0))
-	zy_vector = invert_rotate(vector.new(0, math.sin(zy), -math.cos(zy)))
 	-- Convert back to polar coordinates
-	z_deg = math.atan2(zy_vector.y, zy_vector.z)
-	x_deg = math.atan2(xy_vector.y, xy_vector.x)
+	-- z_deg = math.atan2(zy_vector.y, zy_vector.z)
+	-- x_deg = math.atan2(xy_vector.y, xy_vector.x)
 
-	height_vector = vector.new(0, raw.altitude - geometry.LODESTONE_Y, 0)
-	print(string.format("z_deg: %f, x_deg: %f", z_deg, x_deg))
+	-- height_vector = vector.new(0, raw.altitude - geometry.LODESTONE_Y, 0)
+	-- print(string.format("z_deg: %f, x_deg: %f", math.deg(z_deg), math.deg(x_deg)))
 	-- Vector ZY's z value
-	print(
-		string.format(
-			"z height: %f",
-			(get_offset(geometry.BLOCK_OFFSETS.ZY - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y
-		)
-	)
-	z = (get_offset(geometry.BLOCK_OFFSETS.ZY - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y / math.tan(z_deg)
-	-- Vector XY's x value
-	print(
-		string.format(
-			"x height: %f",
-			(get_offset(geometry.BLOCK_OFFSETS.XY - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y
-		)
-	)
-	x = (get_offset(geometry.BLOCK_OFFSETS.XY - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y / math.tan(x_deg)
+	-- print(
+	-- 	string.format(
+	-- 		"z height: %f",
+	-- 		(get_offset(geometry.BLOCK_OFFSETS.ZY - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y
+	-- 	)
+	-- )
+	-- z = (get_offset(geometry.BLOCK_OFFSETS.ZY - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y / math.tan(z_deg)
+	-- -- Vector XY's x value
+	-- print(
+	-- 	string.format(
+	-- 		"x height: %f",
+	-- 		(get_offset(geometry.BLOCK_OFFSETS.XY - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y
+	-- 	)
+	-- )
+	-- x = (get_offset(geometry.BLOCK_OFFSETS.XY - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y / math.tan(x_deg)
 
-	-- FIXIT: Inaccurate x and z coordinates, y coordinate works
-	-- Substract each angle by their respective gimbal angles
+	-- -- FIXIT: Inaccurate x and z coordinates, y coordinate works
+	-- -- Substract each angle by their respective gimbal angles
 
-	-- Find dock offset of x coordinate, then add that to x coordinate
-	x = get_offset(raw.dock_offset - geometry.BLOCK_OFFSETS.XY).x + x
-	-- Find dock offset of z coordinate, then add that to z coordinate
-	z = get_offset(raw.dock_offset - geometry.BLOCK_OFFSETS.ZY).z + z
-	-- Find dock offset of y coordinate, then use that for height coordinate
-	y = (get_offset(raw.dock_offset - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y + geometry.LODESTONE_Y
+	-- -- Find dock offset of x coordinate, then add that to x coordinate
+	-- x = get_offset(raw.dock_offset - geometry.BLOCK_OFFSETS.XY).x + x
+	-- -- Find dock offset of z coordinate, then add that to z coordinate
+	-- z = get_offset(raw.dock_offset - geometry.BLOCK_OFFSETS.ZY).z + z
+	-- -- Find dock offset of y coordinate, then use that for height coordinate
+	-- y = (get_offset(raw.dock_offset - geometry.BLOCK_OFFSETS.ALTITUDE) + height_vector).y + geometry.LODESTONE_Y
 
 	return {
-		dock_vector = vector.new(x + geometry.CENTER_X, y, z + geometry.CENTER_Z),
+		dock_vector = dock_vector,
 		pivot_angle = ship_xz,
 	}
 end
