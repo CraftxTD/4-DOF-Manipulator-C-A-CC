@@ -88,13 +88,13 @@ end
 -- Uses the raw values and produces the dock vector
 function calculate.process(raw)
 	-- Convert every raw value except gimbals into rad
-	raw.z = math.pi - math.rad(raw.z)
-	raw.y = math.pi - math.rad(raw.y)
-	raw.x = math.pi - math.rad(raw.x)
+	raw.z = 2 * math.pi - math.rad(raw.z)
+	raw.y = 2 * math.pi - math.rad(raw.y)
+	raw.x = 2 * math.pi - math.rad(raw.x)
 	raw.north = math.rad(raw.north)
 
 	-- Gimbal, xy is flipped
-	local ship_xy, ship_zy, ship_xz, yaw_vector
+	local ship_xy, ship_zy, ship_xz
 	ship_xy = -math.rad(raw.gimbal[2])
 	ship_zy = math.rad(raw.gimbal[1])
 
@@ -121,7 +121,7 @@ function calculate.process(raw)
 
 	dot_vector = matrix:new({ { dot_vector.x }, { dot_vector.y }, { dot_vector.z } })
 	dir_vector = matrix.mul(matrix.transpose(nav_matrix), dot_vector)
-	dir_vector = vector.new(-dir_vector[1][1], -dir_vector[2][1], -dir_vector[3][1])
+	dir_vector = vector.new(dir_vector[1][1], dir_vector[2][1], dir_vector[3][1])
 	print(string.format("Direction vector x: %f, y: %f, z: %f", dir_vector.x, dir_vector.y, dir_vector.z))
 	local dock_vector =
 		vector.new(geometry.CENTER_X + dir_vector.x, geometry.CENTER_Y + dir_vector.y, geometry.CENTER_Z + dir_vector.z)
@@ -163,6 +163,19 @@ function calculate.process(raw)
 	})
 	-- Convention YXZ
 	rotation_matrix = matrix.mul(Ry, matrix.mul(Rx, Rz))
+
+	local global_dir_vector = matrix.mul(
+		matrix.transpose(rotation_matrix),
+		matrix:new({ { dir_vector.x }, { dir_vector.y }, { dir_vector.z } })
+	)
+	print(
+		string.format(
+			"Global direction vector x: %f, y: %f, z: %f",
+			global_dir_vector.x,
+			global_dir_vector.y,
+			global_dir_vector.z
+		)
+	)
 
 	-- TODO: Rotate the xz vector too
 	local height_vector, x, z, y, z_deg, x_deg
