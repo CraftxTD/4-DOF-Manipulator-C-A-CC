@@ -14,18 +14,6 @@ local function quadrant(a, b)
 	return angle
 end
 
--- Gives dot product given a vector type or matrix type.
--- Assumes both variables are the same type.
-local function dot(a, b)
-	for _, axis in ipairs(a) do
-		if type(axis) == "number" then
-			return a.x * b.x + a.y * b.y + a.z * b.z
-		else
-			return a[1][1] * b[1][1] + a[2][1] * b[2][1] + a[3][1] * b[3][1]
-		end
-	end
-end
-
 -- NOTE: Cross product strategy
 -- Finds the cross product using matrix lib given vector parameters
 local function cross(a, b)
@@ -110,22 +98,26 @@ function calculate.process(raw)
 	ship_xy = -math.rad(raw.gimbal[2])
 	ship_zy = math.rad(raw.gimbal[1])
 
-	z_vector = vector.new(math.cos(raw.z), math.sin(raw.z), 0)
-	local z_vector, y_vector, x_vector, nav_matrix, dot_vector, dir_vector
-	y_vector = vector.new(math.cos(raw.y), 0, -math.sin(raw.y))
-	x_vector = vector.new(0, math.sin(raw.x), math.cos(raw.x))
+	local az, ay, ax, Nz, Ny, Nx, nav_matrix, dot_vector, dir_vector
+	ax = vector.new(0, math.sin(raw.x), math.cos(raw.x))
+	ay = vector.new(math.cos(raw.y), 0, math.sin(raw.y))
+	az = vector.new(math.cos(raw.z), math.sin(raw.z), 0)
+	Nx = ax:cross(vector.new(1, 0, 0))
+	Ny = ay:cross(vector.new(0, 1, 0))
+	Nz = az:cross(vector.new(0, 0, 1))
 
 	nav_matrix = matrix:new({
-		{ x_vector.x, x_vector.y, x_vector.z },
-		{ y_vector.x, y_vector.y, y_vector.z },
-		{ z_vector.x, z_vector.y, z_vector.z },
+		{ Nx.x, Nx.y, Nx.z },
+		{ Ny.x, Ny.y, Ny.z },
+		{ Nz.x, Nz.y, Nz.z },
 	})
 
 	dot_vector = vector.new(
-		dot(x_vector, raw.dock_offset - geometry.BLOCK_OFFSETS.X),
-		dot(y_vector, raw.dock_offset - geometry.BLOCK_OFFSETS.Y),
-		dot(z_vector, raw.dock_offset - geometry.BLOCK_OFFSETS.Z)
+		Nx:dot(raw.dock_offset - geometry.BLOCK_OFFSETS.X),
+		Ny:dot(raw.dock_offset - geometry.BLOCK_OFFSETS.Y),
+		Nz:dot(raw.dock_offset - geometry.BLOCK_OFFSETS.Z)
 	)
+	print(string.format("dot_vector: %f, %f, %f", dot_vector.x, dot_vector.y, dot_vector.z))
 
 	dot_vector = matrix:new({ { dot_vector.x }, { dot_vector.y }, { dot_vector.z } })
 	dir_vector = matrix.mul(matrix.transpose(nav_matrix), dot_vector)
