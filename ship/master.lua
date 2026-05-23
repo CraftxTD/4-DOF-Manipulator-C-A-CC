@@ -35,7 +35,7 @@ while true do
 		local x, y, z = gps.locate(1, false)
 		local raw = {
 			north = north.getRelativeAngle(),
-			altitude = slave2.altitude,
+			gimbal = getAngles(),
 			dock_offset = dock_offset,
 			global_coords = vector.new(x, y, z),
 		}

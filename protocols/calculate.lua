@@ -121,25 +121,30 @@ function calculate.process(raw)
 	global_cross = matrix.mul(matrix.transpose(Rz), matrix.mul(matrix.transpose(Rx), global_cross))
 	global_cross = vector.new(global_cross[1][1], global_cross[2][1], global_cross[3][1])
 	ship_xz = math.atan2(-global_cross.z, global_cross.x) - math.pi / 2
+	if ship_xz > math.pi then
+		ship_xz = ship_xz - math.pi * 2
+	elseif ship_xz < -math.pi then
+		ship_xz = ship_xz + math.pi * 2
+	end
 	print(string.format("xz vector: (%f, %f, %f)", global_cross.x, global_cross.y, global_cross.z))
 	print(string.format("ship_xz: %f", math.deg(ship_xz)))
 
 	Ry = matrix:new({
-		{ math.cos(ship_xz), 0, -math.sin(ship_xz) },
+		{ math.cos(ship_xz), 0, math.sin(ship_xz) },
 		{ 0, 1, 0 },
-		{ -math.sin(ship_xz), 0, -math.cos(ship_xz) },
+		{ -math.sin(ship_xz), 0, math.cos(ship_xz) },
 	})
 	-- Convention YXZ
 	rotation_matrix = matrix.mul(Ry, matrix.mul(Rx, Rz))
 
 	local local_dock_vector = get_offset(raw.dock_offset)
-	print(string.format("local vector: %s", local_dock_vector:toString()))
+	print(string.format("local vector: %s", local_dock_vector:tostring()))
 	local global_dock_vector = local_dock_vector:add(raw.global_coords)
-	print(string.format("global vector: %s", global_dock_vector:toString()))
+	print(string.format("global vector: %s", global_dock_vector:tostring()))
 
 	return {
 		dock_vector = global_dock_vector,
-		pivot_angle = ship_xz,
+		pivot_angle = math.deg(ship_xz),
 	}
 end
 
