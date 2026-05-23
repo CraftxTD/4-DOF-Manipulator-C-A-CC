@@ -7,6 +7,4 @@ return {
 
 	-- Both ship dock and ship pivot can be used for multiple ships
 	SHIP_DOCK = 9500,
-	SHIP_SLAVE1 = 9501,
-	SHIP_SLAVE2 = 9502,
 }

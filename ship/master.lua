@@ -11,7 +11,7 @@ modem.open(channels.SHIP_DOCK)
 -- MUST BE CALIBRATED FOR EVERY SHIP.
 -- Used to determine where the dock is with respect to the master computer
 -- in the -Z,X plane (global coordinates)
-local dock_offset = vector.new(-2, -1, 2)
+local dock_offset = vector.new(-2, -1, 4)
 
 -- Approximate distance between dock and ship. Used to filter other different ships.
 local dock_to_pivot = 12
@@ -21,16 +21,10 @@ for _, name in ipairs(peripheral.getNames()) do
 end
 
 -- For checking if in docking mode
-local relay_lever = "bottom"
-
--- For checking if docked. This uses the
--- comparator value from the dock connector.
-local relay_check_dock = "right"
-
--- x and z normal vectors of corresponding nav tables
-local x, z
-x = peripheral.wrap("left")
-z = peripheral.wrap("right")
+local relay_lever = "left"
+local gimbal = peripheral.wrap("front")
+local north = peripheral.wrap("back")
+local modem = peripheral.wrap("right")
 
 while true do
 	-- Check if docked
@@ -38,21 +32,13 @@ while true do
 		print("Not in docking mode.. (redstone off)")
 		sleep(1)
 	else
-		slave1 = network.poll(channels.SHIP_SLAVE1, 1)
-		slave2 = network.poll(channels.SHIP_SLAVE2, 1)
+		local x, y, z = gps.locate(1, false)
 		local raw = {
-			x = x.getRelativeAngle(),
-			y = slave1.y,
-			z = z.getRelativeAngle(),
-			north = slave1.north,
+			north = north.getRelativeAngle(),
 			altitude = slave2.altitude,
-			gimbal = slave2.gimbal,
 			dock_offset = dock_offset,
+			global_coords = vector.new(x, y, z),
 		}
-		print(string.format("raw x: %f", raw.x))
-		print(string.format("raw y: %f", raw.y))
-		print(string.format("raw z: %f", raw.z))
-		print(string.format("raw altitude: %f", raw.altitude))
 
 		local processed = calculate.process(raw)
 		print("vector:")
