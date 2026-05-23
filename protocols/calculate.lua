@@ -34,15 +34,7 @@ local function get_offset(block_offset)
 	return vector.new(offset_vector[1][1], offset_vector[2][1], offset_vector[3][1])
 end
 
--- Inverts the rotation back
-local function invert_rotate(angle_vector)
-	local rotated_vector = matrix:new({ { angle_vector.x }, { angle_vector.y }, { angle_vector.z } })
-	-- Convention ZXY with negative angles
-	rotated_vector = matrix.mul(matrix.transpose(rotation_matrix), rotated_vector)
-	return vector.new(rotated_vector[1][1], rotated_vector[2][1], rotated_vector[3][1])
-end
-
--- Get direction because gearshfits don't seem to support
+-- Get direction because gearshifts don't seem to support
 -- negative angles (returns a table)
 -- In xz plane, 1 is towards -x (anti-clockwise), -1 is towards x (clockwise)
 -- Converts radians to degree
@@ -66,6 +58,55 @@ local function reference(theta)
 	else
 		return 2 * math.pi - theta
 	end
+end
+
+-- Determines whether ship is pivoted at an angle that the arm
+-- can reach onto. Returns a table containing a boolean and
+-- the pivot angle to rotate to.
+-- Note that center pivot is a table from deg_direction function
+local function pivot_check(center_pivot, ship_pivot)
+	local local_pos
+	if center_pivot.dir == 1 then
+		local_pos = geometry.INITIAL_ARM_ANGLE + math.rad(center_pivot.angle)
+	elseif center_pivot.dir == -1 then
+		local_pos = geometry.INITIAL_ARM_ANGLE - math.rad(center_pivot.angle)
+		if local_pos < 0 then
+			local_pos = math.pi * 2 - local_pos
+		end
+	end
+	-- Ship yaw is 0 degrees when ship is facing the -z axis
+	if ship_pivot < 0 then
+		ship_pivot = math.pi * 2 + ship_pivot
+	end
+
+	-- Check if ship is in correct quadrant. They are in the correct quadrant
+	-- if they are in the quadrant diagonal to the arm's quadrant.
+	-- Quadrant 1
+	if math.pi / 2 >= local_pos then
+		-- Check if ship in Quadrant 3
+		if not (ship_pivot > math.pi and 3 * math.pi / 2 >= ship_pivot) then
+			return { bool = false, angle = 0 }
+		end
+	-- Quadrant 2
+	elseif math.pi >= local_pos then
+		-- Check if ship in Quadrant 4
+		if not (ship_pivot > 3 * math.pi / 2 and 2 * math.pi >= ship_pivot) then
+			return { bool = false, angle = 0 }
+		end
+	-- Quadrant 3
+	elseif 3 * math.pi / 2 >= local_pos then
+		-- Check if ship in Quadrant 1
+		if not (ship_pivot > 0 and math.pi / 2 >= ship_pivot) then
+			return { bool = false, angle = 0 }
+		end
+	-- Quadrant 4
+	elseif 3 * math.pi / 2 >= local_pos then
+		-- Check if ship in Quadrant 2
+		if not (ship_pivot > math.pi / 2 and math.pi >= ship_pivot) then
+			return { bool = false, angle = 0 }
+		end
+	end
+	return { bool = true, angle = (ship_pivot + math.pi) % (math.pi * 2) - local_pos }
 end
 
 -- All ships have the same channels, thus ships need to be filtered.
@@ -137,65 +178,70 @@ function calculate.process(raw)
 	-- Convention YXZ
 	rotation_matrix = matrix.mul(Ry, matrix.mul(Rx, Rz))
 
-	local local_dock_vector = get_offset(raw.dock_offset)
+	local local_dock_vector = get_offset(raw.dock_offset + geometry.DOCK_OFFSET)
 	print(string.format("local vector: %s", local_dock_vector:tostring()))
 	local global_dock_vector = local_dock_vector:add(raw.global_coords)
 	print(string.format("global vector: %s", global_dock_vector:tostring()))
+	print(string.format("pivot_angle: %f", math.deg(pivot_angle)))
 
 	return {
-		dock_vector = global_dock_vector,
-		pivot_angle = math.deg(ship_xz),
+		ship_vector = global_dock_vector,
+		pivot_angle = ship_xz,
 	}
 end
 
 -- FIXIT: Figure out a way to take care of dock rotation
 
-function calculate.angles(local_ship)
+function calculate.angles(processed)
 	-- Angles are in radians. The arm dock pivot angle is assumed to always be at 0,
 	-- in order to be easily used by the ship pivot angle.
-	-- Horizontal angle spins the pivot bearing, while the vertical angle is used to calculate each joint arm angle.
-	local magnitude, h_angle, v_angle, limb1_angle, limb2_angle, ship_pivot_angle, center_pivot, dock_pivot
-
-	-- Ship angles
-	-- The ship is assumed to be level.
-	local ship_x, ship_y, ship_z
-	ship_pivot_angle = quadrant(local_ship.x2 - local_ship.x1, -(local_ship.z2 - local_ship.z1))
-	ship_x = local_ship.x1
-		+ local_ship.offset_x * math.cos(ship_pivot_angle)
-		- local_ship.offset_z * math.sin(ship_pivot_angle)
-	ship_z = local_ship.z1
-		- local_ship.offset_x * math.sin(ship_pivot_angle)
-		+ local_ship.offset_z * math.cos(ship_pivot_angle)
-	ship_y = local_ship.y1 + local_ship.offset_y
+	-- Horizontal angle spins the pivot bearing (xz plane), while the vertical angle is used to calculate each joint arm angle.
+	-- Ship is assumed to be level
 
 	-- Arm to ship angles and magnitude (z is inverted)
 	-- Current arm is initially rotated by 90 degrees
-	h_angle = quadrant(ship_x - geometry.CENTER_X, -(ship_z - geometry.CENTER_Z))
+	local h_angle =
+		quadrant(processed.ship_vector.x - geometry.CENTER_X, -(processed.ship_vector.z - geometry.CENTER_Z))
 	-- Using hypotenuse of x and z to find vertical angle
-	local hypotenuse_xz = (ship_x - geometry.CENTER_X) / math.cos(h_angle)
-	v_angle = quadrant(hypotenuse_xz, ship_y - geometry.CENTER_Y)
-	magnitude = hypotenuse_xz / math.cos(v_angle)
+	local hypotenuse_xz = math.sqrt(
+		math.pow((processed.ship_vector.x - geometry.ARM.x), 2)
+			+ math.pow((processed.ship_vector.z - geometry.ARM.z), 2)
+	)
+	local v_angle = quadrant(hypotenuse_xz, processed.ship_vector.y - geometry.CENTER_Y)
+	local magnitude = hypotenuse_xz / math.cos(v_angle)
 
 	-- Calculate each joint arm angle
 	-- If at quadrant 2, each joint arm angle is the reflection of their corresponding
 	-- angle at quadrant 1. This is done to prevent the arm from going underground.
-	limb1_angle = reference(v_angle) + math.acos(magnitude / geometry.ARM_RADIUS)
-	limb2_angle = reference(v_angle) - math.acos(magnitude / geometry.ARM_RADIUS) - limb1_angle
+	local limb1_angle = reference(v_angle) + math.acos(magnitude / geometry.ARM_RADIUS)
+	local limb2_angle = reference(v_angle) - math.acos(magnitude / geometry.ARM_RADIUS) - limb1_angle
 
 	-- Calculate center pivot angle and direction
-	center_pivot = deg_direction(geometry.INITIAL_ARM_ANGLE - h_angle)
+	local center_pivot = deg_direction(geometry.INITIAL_ARM_ANGLE - h_angle)
 
 	-- Calculate dock pivot angle and direction.
 	-- The initial dock pivot angle is the same as the center pivot angle.
-	dock_pivot = deg_direction(ship_pivot_angle - h_angle)
+	local dock_pivot = pivot_check(center_pivot, processed.pivot_angle)
 
-	return {
-		v_angle = deg_direction(v_angle),
-		limb1_angle = deg_direction(-limb1_angle),
-		limb2_angle = deg_direction(-limb2_angle),
-		center_pivot = center_pivot,
-		dock_pivot = dock_pivot,
-	}
+	if dock_pivot.bool then
+		-- Quick fix to optimize pivot angle rotation when above 180 degrees
+		if center_pivot.angle > 180 then
+			center_pivot.dir = -1
+			center_pivot.angle = center_pivot.angle - 360
+		end
+		return {
+			possible = true,
+			v_angle = deg_direction(v_angle),
+			limb1_angle = deg_direction(-limb1_angle),
+			limb2_angle = deg_direction(-limb2_angle),
+			center_pivot = center_pivot,
+			dock_pivot = deg_direction(dock_pivot.angle),
+		}
+	else
+		return {
+			possible = false,
+		}
+	end
 end
 
 return calculate
