@@ -40,10 +40,10 @@ while true do
 			global_coords = vector.new(x, y, z),
 		}
 
-		local processed = calculate.process(raw)
-		print("vector:")
-		print(processed.dock_vector)
-		print(string.format("pivot angle: %f ", processed.pivot_angle))
+		-- Transmit to the controller
+		print("Sending data to controller..")
+		modem.transmit(channels.CONTROLLER, channels.SHIP_DOCK, raw)
+
 		sleep(3)
 	end
 end

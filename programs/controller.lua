@@ -15,20 +15,28 @@ local event, a, channel, message
 -- FIX: Focus only on one ship at a time
 
 while true do
-	message = network.poll(channels.SHIP_DOCK, 1)
+	raw = network.poll(channels.SHIP_DOCK, 1)
 
 	print("Found ship.. ")
-	local data = calculate.angles(message)
+	local data = calculate.angles(calculate.process(raw))
+
+	if not data.possible then
+		print("! Ship cannot be safely docked, please align dock to the arm's center !")
+		goto skip
+	end
 
 	-- Waits until the ring bearing has moved
+	print("Rotating ring bearing..")
 	modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
 	network.poll(channels.CONTROLLER, 1)
 
 	-- Waits until limb 1 has moved
+	print("Rotating limb 1 bearing..")
 	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
 	network.poll(channels.CONTROLLER, 1)
 
 	-- Waits until limb 2 has moved
+	print("Rotating limb 2 and dock bearing..")
 	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
 	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
 
@@ -38,17 +46,23 @@ while true do
 
 	sleep(10)
 
+	print("Going back to resting position..")
 	-- Waits until the ring bearing has moved
+	print("Rotating ring bearing..")
 	modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
 	network.poll(channels.CONTROLLER, 1)
 
 	-- Waits until limb 1 has moved
+	print("Rotating limb 1 bearing..")
 	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
 	network.poll(channels.CONTROLLER, 1)
 
 	-- Waits until limb 2 has moved
+	print("Rotating limb 2 and dock bearing..")
 	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
 	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
 
+	::skip::
+	print("Sleeping..")
 	sleep(10)
 end

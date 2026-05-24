@@ -26,7 +26,6 @@ end
 -- Calculate the rotation matrix based off the offsets
 -- Takes block vector offset as value (distance of block from master computer)
 -- Takes a vector object, converts into matrix form, then returns vector object.
-
 local function get_offset(block_offset)
 	local offset_vector = matrix:new({ { block_offset.x }, { block_offset.y }, { block_offset.z } })
 	-- Convention YXZ
@@ -100,7 +99,7 @@ local function pivot_check(center_pivot, ship_pivot)
 			return { bool = false, angle = 0 }
 		end
 	-- Quadrant 4
-	elseif 3 * math.pi / 2 >= local_pos then
+	else
 		-- Check if ship in Quadrant 2
 		if not (ship_pivot > math.pi / 2 and math.pi >= ship_pivot) then
 			return { bool = false, angle = 0 }
@@ -209,7 +208,6 @@ function calculate.angles(processed)
 	)
 	local v_angle = quadrant(hypotenuse_xz, processed.ship_vector.y - geometry.CENTER_Y)
 	local magnitude = hypotenuse_xz / math.cos(v_angle)
-
 	-- Calculate each joint arm angle
 	-- If at quadrant 2, each joint arm angle is the reflection of their corresponding
 	-- angle at quadrant 1. This is done to prevent the arm from going underground.
