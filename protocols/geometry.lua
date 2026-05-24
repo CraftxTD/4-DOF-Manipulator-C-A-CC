@@ -2,6 +2,7 @@
 return {
 	-- Coordinates of the first block in the limb 1 bearing.
 	-- Must be configured everytime the arm location is changed.
+	SHIP_DOCK_OFFSET = vector.new(-2, -1, 4),
 	ARM = vector.new(465, 116, 423),
 	-- LODESTONE OFFSET
 	LODESTONE_Y = 109,

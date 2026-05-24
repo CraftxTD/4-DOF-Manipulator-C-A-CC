@@ -15,7 +15,7 @@ local event, a, channel, message
 -- FIX: Focus only on one ship at a time
 
 while true do
-	raw = network.poll(channels.SHIP_DOCK, 1)
+	local raw = network.poll(channels.SHIP_DOCK, 1)
 
 	print("Found ship.. ")
 	local data = calculate.angles(calculate.process(raw))

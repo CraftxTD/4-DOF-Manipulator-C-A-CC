@@ -11,7 +11,7 @@ modem.open(channels.SHIP_DOCK)
 -- MUST BE CALIBRATED FOR EVERY SHIP.
 -- Used to determine where the dock is with respect to the master computer
 -- in the -Z,X plane (global coordinates)
-local dock_offset = vector.new(-2, -1, 4)
+local offset = vector.new(-2, -1, 4)
 
 -- Approximate distance between dock and ship. Used to filter other different ships.
 local dock_to_pivot = 12
@@ -35,8 +35,7 @@ while true do
 		local x, y, z = gps.locate(1, false)
 		local raw = {
 			north = north.getRelativeAngle(),
-			gimbal = getAngles(),
-			dock_offset = dock_offset,
+			gimbal = gimbal.getAngles(),
 			global_coords = vector.new(x, y, z),
 		}
 
