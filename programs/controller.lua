@@ -25,11 +25,6 @@ while true do
 		goto skip
 	end
 
-	-- Waits until the ring bearing has moved
-	print("Rotating ring bearing..")
-	modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
-	network.poll(channels.CONTROLLER, 1)
-
 	-- Waits until limb 1 has moved
 	print("Rotating limb 1 bearing..")
 	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
@@ -40,8 +35,15 @@ while true do
 	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
 	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
 
+	-- Waits until the ring bearing has moved
+	print("Rotating ring bearing..")
+	modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
+	network.poll(channels.CONTROLLER, 1)
+
 	for _, bearing in pairs(data) do
-		bearing.dir = -bearing.dir
+		if type(bearing) ~= "boolean" then
+			bearing.dir = -bearing.dir
+		end
 	end
 
 	sleep(10)
@@ -52,15 +54,15 @@ while true do
 	modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
 	network.poll(channels.CONTROLLER, 1)
 
-	-- Waits until limb 1 has moved
-	print("Rotating limb 1 bearing..")
-	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
-	network.poll(channels.CONTROLLER, 1)
-
 	-- Waits until limb 2 has moved
 	print("Rotating limb 2 and dock bearing..")
 	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
 	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
+
+	-- Waits until limb 1 has moved
+	print("Rotating limb 1 bearing..")
+	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
+	network.poll(channels.CONTROLLER, 1)
 
 	::skip::
 	print("Sleeping..")
