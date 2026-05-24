@@ -74,9 +74,8 @@ local function pivot_check(center_pivot, ship_pivot)
 		end
 	end
 	-- Ship yaw is 0 degrees when ship is facing the -z axis
-	if ship_pivot < 0 then
-		ship_pivot = math.pi * 2 + ship_pivot
-	end
+	ship_pivot = (ship_pivot + math.pi) % (math.pi * 2)
+	print(string.format("ship pivot: %f, local pos: %f", math.deg(ship_pivot), math.deg(local_pos)))
 
 	-- Check if ship is in correct quadrant. They are in the correct quadrant
 	-- if they are in the quadrant diagonal to the arm's quadrant.
@@ -177,11 +176,11 @@ function calculate.process(raw)
 	-- Convention YXZ
 	rotation_matrix = matrix.mul(Ry, matrix.mul(Rx, Rz))
 
-	local local_dock_vector = get_offset(geometry.DOCK_OFFSET.add(self, geometry.SHIP_DOCK_OFFSET))
+	local local_dock_vector = get_offset(geometry.DOCK_OFFSET:add(geometry.SHIP_DOCK_OFFSET))
 	print(string.format("local vector: %s", local_dock_vector:tostring()))
-	local global_dock_vector = local_dock_vector:add(raw.global_coords)
+	local global_dock_vector = local_dock_vector:add(vector.new(raw.x, raw.y, raw.z))
 	print(string.format("global vector: %s", global_dock_vector:tostring()))
-	print(string.format("pivot_angle: %f", math.deg(pivot_angle)))
+	print(string.format("pivot_angle: %f", math.deg(ship_xz)))
 
 	return {
 		ship_vector = global_dock_vector,
@@ -199,14 +198,13 @@ function calculate.angles(processed)
 
 	-- Arm to ship angles and magnitude (z is inverted)
 	-- Current arm is initially rotated by 90 degrees
-	local h_angle =
-		quadrant(processed.ship_vector.x - geometry.CENTER_X, -(processed.ship_vector.z - geometry.CENTER_Z))
+	local h_angle = quadrant(processed.ship_vector.x - geometry.ARM.x, -(processed.ship_vector.z - geometry.ARM.z))
 	-- Using hypotenuse of x and z to find vertical angle
 	local hypotenuse_xz = math.sqrt(
 		math.pow((processed.ship_vector.x - geometry.ARM.x), 2)
 			+ math.pow((processed.ship_vector.z - geometry.ARM.z), 2)
 	)
-	local v_angle = quadrant(hypotenuse_xz, processed.ship_vector.y - geometry.CENTER_Y)
+	local v_angle = quadrant(hypotenuse_xz, processed.ship_vector.y - geometry.ARM.y)
 	local magnitude = hypotenuse_xz / math.cos(v_angle)
 	-- Calculate each joint arm angle
 	-- If at quadrant 2, each joint arm angle is the reflection of their corresponding
@@ -216,6 +214,8 @@ function calculate.angles(processed)
 
 	-- Calculate center pivot angle and direction
 	local center_pivot = deg_direction(geometry.INITIAL_ARM_ANGLE - h_angle)
+	print(string.format("h angle: %f", math.deg(h_angle)))
+	print(string.format("center pivot: %f, dir: %f", center_pivot.angle, center_pivot.dir))
 
 	-- Calculate dock pivot angle and direction.
 	-- The initial dock pivot angle is the same as the center pivot angle.

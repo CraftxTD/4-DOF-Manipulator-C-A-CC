@@ -36,7 +36,9 @@ while true do
 		local raw = {
 			north = north.getRelativeAngle(),
 			gimbal = gimbal.getAngles(),
-			global_coords = vector.new(x, y, z),
+			x = x,
+			y = y,
+			z = z,
 		}
 
 		-- Transmit to the controller
