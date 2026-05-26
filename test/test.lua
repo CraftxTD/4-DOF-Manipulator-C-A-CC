@@ -30,7 +30,7 @@ while true do
 
 	print("Rotating limb 2 and dock bearing..")
 	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
-	network.poll(channels.CONTROLLER, 1)
+
 	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
 
 	print("Rotating limb 1 bearing..")
