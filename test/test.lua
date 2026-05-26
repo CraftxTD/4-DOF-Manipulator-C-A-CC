@@ -28,12 +28,13 @@ while true do
 	modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
 	network.poll(channels.CONTROLLER, 1)
 
-	-- Waits until the ring bearing has moved
-	print("Rotating limb 1 bearing..")
-	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
 	print("Rotating limb 2 and dock bearing..")
 	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
+	network.poll(channels.CONTROLLER, 1)
 	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
+
+	print("Rotating limb 1 bearing..")
+	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
 
 	for _, bearing in pairs(data) do
 		if type(bearing) ~= "boolean" then
