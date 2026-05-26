@@ -1,3 +1,4 @@
+-- NOTE: As of typing this wired modems cannot be connected to vertical bearings for whatever reason
 package.path = package.path .. ";/?.lua"
 
 -- This is used to control the rotation of the ring, limb 1 and limb 2 bearings.
@@ -23,7 +24,7 @@ for _, name in ipairs(peripheral.getNames()) do
 	print(string.format("Found peripheral %s to the %s..", peripheral.getType(name), name))
 end
 
-local gearshift = peripheral.wrap("right")
+local gearshift = peripheral.find("Create_SequencedGearshift")
 
 local data
 
@@ -33,8 +34,7 @@ while true do
 	if type(data) == "number" then
 		local bearing = peripheral.find("swivel_bearing")
 		-- Go to a specific position relative to 0 degrees
-		-- Used to go to idle position
-		local pos = calculate.deg_direction(math.rad(data - bearing.getTargetAngle()))
+		local pos = calculate.deg_direction(-math.rad(data - bearing.getTargetAngle()))
 		gearshift.rotate(pos.angle, pos.dir)
 
 		while gearshift.isRunning() do

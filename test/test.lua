@@ -24,20 +24,16 @@ while true do
 		goto skip
 	end
 
-	-- Waits until limb 1 has moved
-	print("Rotating limb 1 bearing..")
-	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
-	network.poll(channels.CONTROLLER, 1)
-
-	-- Waits until limb 2 has moved
-	print("Rotating limb 2 and dock bearing..")
-	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
-	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
-
-	-- Waits until the ring bearing has moved
 	print("Rotating ring bearing..")
 	modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
 	network.poll(channels.CONTROLLER, 1)
+
+	-- Waits until the ring bearing has moved
+	print("Rotating limb 1 bearing..")
+	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
+	print("Rotating limb 2 and dock bearing..")
+	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
+	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
 
 	for _, bearing in pairs(data) do
 		if type(bearing) ~= "boolean" then
@@ -50,19 +46,17 @@ while true do
 	-- Go back if "b'"
 	if args[1] == "b" then
 		print("Going back to resting position..")
-		-- Waits until the ring bearing has moved
-		print("Rotating ring bearing..")
-		modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
-		network.poll(channels.CONTROLLER, 1)
 
-		-- Waits until limb 2 has moved
+		print("Rotating limb 1 bearing..")
+		modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
 		print("Rotating limb 2 and dock bearing..")
 		modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
 		modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
+		network.poll(channels.CONTROLLER, 1)
 
-		-- Waits until limb 1 has moved
-		print("Rotating limb 1 bearing..")
-		modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
+		-- Waits until every bearing has moved
+		print("Rotating ring bearing..")
+		modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
 		network.poll(channels.CONTROLLER, 1)
 	end
 	::skip::

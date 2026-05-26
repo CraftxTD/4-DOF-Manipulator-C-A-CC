@@ -1,4 +1,3 @@
--- NOTE: Ignores dock rotation, I am not sure why I cannot put a modem on the dock bearing
 package.path = package.path .. ";/?.lua"
 local channels = require("protocols.channels")
 local network = require("protocols.network")
@@ -18,16 +17,16 @@ elseif args[1] == "n" then
 	degrees[1], degrees[2], degrees[3] = math.deg(geometry.LIMB_1), math.deg(geometry.LIMB_2), 0
 end
 
--- Waits until limb 1 has moved
 print("Rotating limb 1 bearing..")
 modem.transmit(channels.LIMB_1, channels.CONTROLLER, degrees[1])
-network.poll(channels.CONTROLLER, 1)
 
--- Waits until limb 2 has moved
-print("Rotating limb 2")
+print("Rotating limb 2 bearing..")
 modem.transmit(channels.LIMB_2, channels.CONTROLLER, degrees[2])
 
--- Waits until the ring bearing has moved
+print("Rotating dock bearing..")
+modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, degrees[3])
+
+-- Waits until everything has moved
 print("Rotating ring bearing..")
 modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, degrees[3])
 network.poll(channels.CONTROLLER, 1)
