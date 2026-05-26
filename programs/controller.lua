@@ -6,8 +6,6 @@ local calculate = require("protocols.calculate")
 local modem = peripheral.find("modem") or error("No modem", 0)
 modem.open(channels.CONTROLLER)
 
-local event, a, channel, message
-
 -- TODO: Fully implement controller
 -- TODO: Initial angle for manipulator when idle, implement system
 -- to change angles when already at a select location at calculate.

@@ -32,19 +32,6 @@ local function get_offset(block_offset)
 	offset_vector = matrix.mul(rotation_matrix, offset_vector)
 	return vector.new(offset_vector[1][1], offset_vector[2][1], offset_vector[3][1])
 end
-
--- Get direction because gearshifts don't seem to support
--- negative angles (returns a table)
--- In xz plane, 1 is towards -x (anti-clockwise), -1 is towards x (clockwise)
--- Converts radians to degree
-local function deg_direction(theta)
-	if theta < 0 then
-		return { angle = math.deg(math.abs(theta) % (2 * math.pi)), dir = 1 }
-	else
-		return { angle = math.deg(theta % (2 * math.pi)), dir = -1 }
-	end
-end
-
 -- Returns reference angle, necessary for only calculating
 -- limb joint angles at the first quadrant
 local function reference(theta)
@@ -59,10 +46,22 @@ local function reference(theta)
 	end
 end
 
+-- Get direction because gearshifts don't seem to support
+-- negative angles (returns a table)
+-- In xz plane, 1 is towards -x (anti-clockwise), -1 is towards x (clockwise)
+-- Converts radians to degrees
+function calculate.deg_direction(theta)
+	if theta < 0 then
+		return { angle = math.deg(math.abs(theta) % (2 * math.pi)), dir = 1 }
+	else
+		return { angle = math.deg(theta % (2 * math.pi)), dir = -1 }
+	end
+end
+
 -- Determines whether ship is pivoted at an angle that the arm
 -- can reach onto. Returns a table containing a boolean and
 -- the pivot angle to rotate to.
--- Note that center pivot is a table from deg_direction function
+-- Note that center pivot is a table from calculate.deg_direction function
 local function pivot_check(center_pivot, ship_pivot)
 	local local_pos
 	if center_pivot.dir == 1 then
@@ -212,8 +211,11 @@ function calculate.angles(processed)
 	local limb1_angle = reference(v_angle) + math.acos(magnitude / geometry.ARM_RADIUS)
 	local limb2_angle = reference(v_angle) - math.acos(magnitude / geometry.ARM_RADIUS) - limb1_angle
 
+	-- Account for idle position
+	limb1_angle = limb1_angle - geometry.LIMB_1
+	limb2_angle = limb2_angle - geometry.LIMB_2
 	-- Calculate center pivot angle and direction
-	local center_pivot = deg_direction(geometry.INITIAL_ARM_ANGLE - h_angle)
+	local center_pivot = calculate.deg_direction(geometry.INITIAL_ARM_ANGLE - h_angle)
 	print(string.format("h angle: %f", math.deg(h_angle)))
 	print(string.format("center pivot: %f, dir: %f", center_pivot.angle, center_pivot.dir))
 
@@ -229,11 +231,11 @@ function calculate.angles(processed)
 		end
 		return {
 			possible = true,
-			v_angle = deg_direction(v_angle),
-			limb1_angle = deg_direction(-limb1_angle),
-			limb2_angle = deg_direction(-limb2_angle),
+			v_angle = calculate.deg_direction(v_angle),
+			limb1_angle = calculate.deg_direction(-limb1_angle),
+			limb2_angle = calculate.deg_direction(-limb2_angle),
 			center_pivot = center_pivot,
-			dock_pivot = deg_direction(dock_pivot.angle),
+			dock_pivot = calculate.deg_direction(dock_pivot.angle),
 		}
 	else
 		return {

@@ -4,7 +4,7 @@ local directories = {
 	libs = { "complex.lua", "matrix.lua" },
 	protocols = { "calculate.lua", "channels.lua", "geometry.lua", "network.lua" },
 	ship = { "master.lua" },
-	test = { "test.lua" },
+	test = { "test.lua", "calibrate.lua" },
 }
 local root_files = {
 	"arm_bearing.lua",

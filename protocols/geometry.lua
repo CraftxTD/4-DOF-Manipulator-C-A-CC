@@ -16,5 +16,9 @@ return {
 	-- Offset of dock relative to the second limb's point.
 	-- These coordinates are then converted to the ship dock's
 	-- local coordinates.
-	DOCK_OFFSET = vector.new(-4, -1, 0),
+	DOCK_OFFSET = vector.new(-4.5, 1.5, 0),
+
+	-- Idle limb angles
+	LIMB_1 = math.rad(140),
+	LIMB_2 = math.rad(-155),
 }

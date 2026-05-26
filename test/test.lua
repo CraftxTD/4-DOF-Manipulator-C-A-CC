@@ -1,55 +1,71 @@
--- NOTE: Controller example test, must be re-run everytime
-
 package.path = package.path .. ";/?.lua"
-
 local channels = require("protocols.channels")
 local network = require("protocols.network")
 local calculate = require("protocols.calculate")
+local args = { ... }
 
 local modem = peripheral.find("modem") or error("No modem", 0)
 modem.open(channels.CONTROLLER)
 
-local event, a, channel, message
+-- TODO: Fully implement controller
+-- TODO: Initial angle for manipulator when idle, implement system
+-- to change angles when already at a select location at calculate.
+-- Maybe use constant values that change?
+-- FIX: Focus only on one ship at a time
 
-message = network.poll(channels.SHIP_DOCK, 1)
+while true do
+	local raw = network.poll(channels.SHIP_DOCK, 1)
 
-print("Found ship.. ")
-local data = calculate.angles(message)
+	print("Found ship.. ")
+	local data = calculate.angles(calculate.process(raw))
 
--- Waits until limb 1 has moved
-modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
-network.poll(channels.CONTROLLER, 1)
+	if not data.possible then
+		print("! Ship cannot be safely docked, please align dock to the arm's center !")
+		goto skip
+	end
 
--- Waits until limb 2 has moved
-modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
-network.poll(channels.CONTROLLER, 1)
+	-- Waits until limb 1 has moved
+	print("Rotating limb 1 bearing..")
+	modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
+	network.poll(channels.CONTROLLER, 1)
 
--- Waits
-modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
-network.poll(channels.CONTROLLER, 1)
+	-- Waits until limb 2 has moved
+	print("Rotating limb 2 and dock bearing..")
+	modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
+	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
 
--- Waits until the ring bearing has moved
-modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
-network.poll(channels.CONTROLLER, 1)
+	-- Waits until the ring bearing has moved
+	print("Rotating ring bearing..")
+	modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
+	network.poll(channels.CONTROLLER, 1)
 
-for _, bearing in pairs(data) do
-	bearing.dir = -bearing.dir
+	for _, bearing in pairs(data) do
+		if type(bearing) ~= "boolean" then
+			bearing.dir = -bearing.dir
+		end
+	end
+
+	sleep(10)
+
+	-- Go back if "b'"
+	if args[1] == "b" then
+		print("Going back to resting position..")
+		-- Waits until the ring bearing has moved
+		print("Rotating ring bearing..")
+		modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
+		network.poll(channels.CONTROLLER, 1)
+
+		-- Waits until limb 2 has moved
+		print("Rotating limb 2 and dock bearing..")
+		modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
+		modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
+
+		-- Waits until limb 1 has moved
+		print("Rotating limb 1 bearing..")
+		modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
+		network.poll(channels.CONTROLLER, 1)
+	end
+	::skip::
+	print("Sleeping..")
+	break
 end
-
-sleep(5)
-
--- Waits until the ring bearing has moved
-modem.transmit(channels.LIMB_RING_BEARING, channels.CONTROLLER, data.center_pivot)
-network.poll(channels.CONTROLLER, 1)
-
--- Waits
-modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, data.dock_pivot)
-network.poll(channels.CONTROLLER, 1)
-
--- Waits until limb 2 has moved
-modem.transmit(channels.LIMB_2, channels.CONTROLLER, data.limb2_angle)
-network.poll(channels.CONTROLLER, 1)
-
--- Waits until limb 1 has moved
-modem.transmit(channels.LIMB_1, channels.CONTROLLER, data.limb1_angle)
-network.poll(channels.CONTROLLER, 1)
