@@ -16,6 +16,23 @@ function network.poll(receiveChannel, time)
 	end
 end
 
+-- Waits until a signal is received on a channel for x seconds.
+function network.poll_for(receiveChannel, time)
+	local event, key, origin, data
+	-- Timer
+	local timer = os.startTimer(time)
+	while true do
+		event, key, _, origin, data = os.pullEvent()
+		if event == "modem_message" and origin == receiveChannel then
+			print(string.format("Received message from %s.. ", receiveChannel))
+			return data
+		elseif event == "timer" and key == timer then
+			print(string.format("Polled for %s seconds.. ", time))
+			break
+		end
+	end
+end
+
 -- Signal strength has a maximum value of 14
 function network.poll_redstone(side, signal_strength, time)
 	signal_strength = math.min(signal_strength, 14)

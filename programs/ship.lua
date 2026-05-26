@@ -2,19 +2,8 @@ package.path = package.path .. ";/?.lua"
 -- Gets position of the dock and sends it to the calculator
 local channels = require("protocols.channels")
 local network = require("protocols.network")
-local geometry = require("protocols.geometry")
-local calculate = require("protocols.calculate")
 local modem = peripheral.find("modem") or error("No modem", 0)
 modem.open(channels.SHIP_DOCK)
-
--- Offset values (x, y, z)
--- MUST BE CALIBRATED FOR EVERY SHIP.
--- Used to determine where the dock is with respect to the master computer
--- in the -Z,X plane (global coordinates)
-local offset = vector.new(-2, -1, 4)
-
--- Approximate distance between dock and ship. Used to filter other different ships.
-local dock_to_pivot = 12
 
 for _, name in ipairs(peripheral.getNames()) do
 	print(string.format("Found peripheral %s to the %s..", peripheral.getType(name), name))
@@ -25,6 +14,19 @@ local relay_lever = "left"
 local gimbal = peripheral.wrap("front")
 local north = peripheral.wrap("back")
 local modem = peripheral.wrap("right")
+local speaker = peripheral.wrap("top")
+
+local function play(num)
+	-- Success
+	if num == 1 then
+		speaker.playNote("chime", 2, 8)
+		speaker.playNote("chime", 2, 12)
+		speaker.playNote("chime", 2, 15)
+	-- Fail
+	elseif num == 2 then
+		speaker.playNote("didgeridoo", 2, 24)
+	end
+end
 
 while true do
 	-- Check if docked
@@ -44,7 +46,15 @@ while true do
 		-- Transmit to the controller
 		print("Sending data to controller..")
 		modem.transmit(channels.CONTROLLER, channels.SHIP_DOCK, raw)
-
-		sleep(3)
+		-- Poll for 3 seconds for controller response
+		local success = network.poll_for(channels.CONTROLLER, 3)
+		if type(success) ~= "nil" then
+			if success then
+				play(1)
+			end
+		else
+			play(2)
+		end
+		sleep(1)
 	end
 end
