@@ -34,7 +34,7 @@ while true do
 		local bearing = peripheral.find("swivel_bearing")
 		-- Go to a specific position relative to 0 degrees
 		-- Used to go to idle position
-		local pos = calculate.deg_direction(data - bearing.getTargetAngle())
+		local pos = calculate.deg_direction(math.rad(data - bearing.getTargetAngle()))
 		gearshift.rotate(pos.angle, pos.dir)
 
 		while gearshift.isRunning() do
