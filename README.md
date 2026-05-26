@@ -12,3 +12,6 @@ To download, copy the following commands into your Minecraft computer terminal:
 pastebin run 1ys1Ph0n
 ```
 
+This project includes LuaMatrix (http://luamatrix.luaforge.net/),
+which is licensed under the MIT License.
+

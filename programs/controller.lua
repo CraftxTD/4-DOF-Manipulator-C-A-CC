@@ -28,5 +28,5 @@ while true do
     print("Returning back to idle position..")
     movement.calibrate(1, modem)
   end
-  sleep(5)
+  sleep(2)
 end
