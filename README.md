@@ -9,11 +9,6 @@ This is a project that implements a 4 DOF Manipulator in Minecraft using **Creat
 To download, copy the following commands into your Minecraft computer terminal: 
 
 ```bash
-wget https://raw.githubusercontent.com/CraftxTD/4-DOF-Manipulator-C-A-CC/refs/heads/vanilla-gps/startup.lua  /startup.lua
+pastebin run 1ys1Ph0n
 ```
 
-then run the following script in the root directory:
-
-```bash
-startup
-```
