@@ -78,6 +78,7 @@ local function install()
 	print("Successfully downloaded.")
 end
 
+local first = true
 while true do
 	firstMenu()
 	local _, chr = os.pullEvent("char")
@@ -85,10 +86,14 @@ while true do
 		_, chr = os.pullEvent("char")
 	end
 
-	install()
 	if chr == 8 then
 		break
 	else
+		first = false
+		install()
+		if not first then
+			fs.delete("/startup.lua")
+		end
 		setStartup(chr)
 	end
 end
