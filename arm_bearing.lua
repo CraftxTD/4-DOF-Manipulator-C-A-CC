@@ -17,7 +17,7 @@ elseif args[1] == "4" then
 	localChannel = channels.LIMB_DOCK_BEARING
 end
 
-local modem = peripheral.find("modem") or error("No modem", 0)
+local modem = peripheral.wrap("left") or error("No modem", 0)
 modem.open(localChannel)
 
 for _, name in ipairs(peripheral.getNames()) do
