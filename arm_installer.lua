@@ -24,7 +24,11 @@ local function firstMenu()
 end
 
 local function setStartup(chr)
-	local file = fs.open("startup.lua", "w")
+	if fs.exists("/startup.lua") then
+		fs.delete("/startup.lua")
+	end
+	local file = fs.open("/startup.lua", "w")
+
 	if chr == 1 then
 		file.writeLine('shell.run("/programs/controller")')
 	elseif chr == 2 then
@@ -86,14 +90,12 @@ while true do
 		_, chr = os.pullEvent("char")
 	end
 
+	chr = tonumber(chr)
 	if chr == 8 then
 		break
 	else
 		first = false
 		install()
-		if not first then
-			fs.delete("/startup.lua")
-		end
 		setStartup(chr)
 	end
 end
