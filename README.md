@@ -1,8 +1,6 @@
 # 4-DOF-Manipulator-C-A-CC
 This is a project that implements a 4 DOF Manipulator in Minecraft using **Create Aeronautics** and **CC: Tweaked**.
 
-**Previews**: https://imgur.com/a/4-dof-aeronautics-arm-test-BfevJpu
-
 ![Demo](./demo.gif)
 
 ### Installation
