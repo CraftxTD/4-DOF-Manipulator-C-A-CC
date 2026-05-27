@@ -11,10 +11,11 @@ end
 
 -- For checking if in docking mode
 local relay_lever = "left"
-local gimbal = peripheral.wrap("front")
-local north = peripheral.wrap("back")
-local modem = peripheral.wrap("right")
-local speaker = peripheral.wrap("top")
+local gimbal, north, modem, speaker =
+	peripheral.find("gimbal_sensor"),
+	peripheral.find("navigation_table"),
+	peripheral.find("modem"),
+	peripheral.find("speaker")
 
 local function play(num)
 	-- Success
