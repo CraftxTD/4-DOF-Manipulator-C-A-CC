@@ -5,6 +5,8 @@
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -]]
 
+package.path = package.path .. ";/?.lua"
+
 local function firstMenu()
 	term.clear()
 	term.setCursorPos(1, 1)
@@ -24,19 +26,19 @@ end
 local function setStartup(chr)
 	local file = fs.open("startup.lua", "w")
 	if chr == 1 then
-		file.writeLine('shell.run("programs/controller")')
+		file.writeLine('shell.run("/programs/controller")')
 	elseif chr == 2 then
-		file.writeLine('shell.run("programs/ship")')
+		file.writeLine('shell.run("/programs/ship")')
 	elseif chr == 3 then
-		file.writeLine('shell.run("arm_bearing", 1)')
+		file.writeLine('shell.run("/arm_bearing", 1)')
 	elseif chr == 4 then
-		file.writeLine('shell.run("arm_bearing", 2)')
+		file.writeLine('shell.run("/arm_bearing", 2)')
 	elseif chr == 5 then
-		file.writeLine('shell.run("arm_bearing", 3)')
+		file.writeLine('shell.run("/arm_bearing", 3)')
 	elseif chr == 6 then
-		file.writeLine('shell.run("arm_bearing", 4)')
+		file.writeLine('shell.run("/arm_bearing", 4)')
 	elseif chr == 7 then
-		file.writeLine('shell.run("programs/gyro")')
+		file.writeLine('shell.run("/programs/gyro")')
 	end
 	file.close()
 end
