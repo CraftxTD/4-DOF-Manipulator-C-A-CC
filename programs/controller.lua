@@ -19,6 +19,7 @@ while true do
 	local data = calculate.angles(calculate.process(raw))
 
   if movement.goto(data, modem) then
+    sleep(5)
     while redstone.getAnalogInput("front") == 15 do
       print("Ship currently docked..")
       sleep(0.5)

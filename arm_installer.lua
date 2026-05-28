@@ -82,7 +82,6 @@ local function install()
 	print("Successfully downloaded.")
 end
 
-local first = true
 while true do
 	firstMenu()
 	local _, chr = os.pullEvent("char")
@@ -94,7 +93,6 @@ while true do
 	if chr == 8 then
 		break
 	else
-		first = false
 		install()
 		setStartup(chr)
 	end
