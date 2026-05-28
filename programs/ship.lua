@@ -31,19 +31,21 @@ local function play(num)
 		speaker.playNote("didgeridoo", 2, 12)
 		sleep(0.3)
 		speaker.playNote("didgeridoo", 2, 6)
+	-- Undock
+	elseif num == 3 then
+		speaker.playNote("chime", 2, 16)
+		sleep(0.3)
+		speaker.playNote("chime", 2, 15)
+		sleep(0.3)
+		speaker.playNote("chime", 2, 13)
+		sleep(0.3)
+		speaker.playNote("chime", 2, 11)
 	end
 end
 
 while true do
 	-- Check if wanna dock (button)
-	local want = false
-	for _, side in pairs(redstone.getSides()) do
-		if redstone.getInput(side) then
-			want = true
-			break
-		end
-	end
-	if want then
+	if redstone.getInput("left") then
 		local x, y, z = gps.locate(1, false)
 		local raw = {
 			north = north.getRelativeAngle(),
@@ -61,6 +63,10 @@ while true do
 		if type(success) ~= "nil" then
 			if success then
 				play(1)
+				local undocked = network.poll(channels.CONTROLLER)
+				if undocked then
+					play(3)
+				end
 			else
 				play(2)
 			end
