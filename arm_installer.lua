@@ -23,30 +23,6 @@ local function firstMenu()
 	print("8. Exit")
 end
 
-local function setStartup(chr)
-	if fs.exists("/startup.lua") then
-		fs.delete("/startup.lua")
-	end
-	local file = fs.open("/startup.lua", "w")
-
-	if chr == 1 then
-		file.writeLine('shell.run("/programs/controller")')
-	elseif chr == 2 then
-		file.writeLine('shell.run("/programs/ship")')
-	elseif chr == 3 then
-		file.writeLine('shell.run("/arm_bearing", 1)')
-	elseif chr == 4 then
-		file.writeLine('shell.run("/arm_bearing", 2)')
-	elseif chr == 5 then
-		file.writeLine('shell.run("/arm_bearing", 3)')
-	elseif chr == 6 then
-		file.writeLine('shell.run("/arm_bearing", 4)')
-	elseif chr == 7 then
-		file.writeLine('shell.run("/programs/gyro")')
-	end
-	file.close()
-end
-
 local function install()
 	print("Installing files..")
 	local base = "https://raw.githubusercontent.com/CraftxTD/4-DOF-Manipulator-C-A-CC/refs/heads/vanilla-gps/"
@@ -80,6 +56,91 @@ local function install()
 	end
 
 	print("Successfully downloaded.")
+end
+
+-- Change config value in geometry.lua
+local function setConfig(name, value)
+	local file = fs.open("/protocols/geometry.lua", "r")
+	local text = file.readAll()
+	file.close()
+
+	text = text:gsub("local%s+" .. name .. "%s*=%s*[%d%.%-]+", "local " .. name .. " = " .. tostring(value))
+
+	file = fs.open("/protocols/geometry.lua", "w")
+	file.write(text)
+	file.close()
+end
+
+local function readValue()
+	::restart::
+	print("")
+	write("> ")
+	local msg = read()
+	local values = {}
+
+	for num in string.gmatch(msg, "%S+") do
+		if tonumber(num) == nil then
+			print("Must be a number.")
+			goto restart
+		end
+		table.insert(values, tonumber(num))
+	end
+
+	return table
+end
+
+local function setStartup(chr)
+	if fs.exists("/startup.lua") then
+		fs.delete("/startup.lua")
+	end
+	local file = fs.open("/startup.lua", "w")
+
+	if chr == 1 then
+		file.writeLine('shell.run("/programs/controller")')
+		repeat
+			local loop = true
+			print("What are the arm coordinates? (x, y, z)")
+			print("(These are the coordinates of the first block of the limb 1 bearing.)")
+			local c = readValue()
+			if c[1] ~= nil and c[2] ~= nil and c[3] ~= nil then
+				loop = false
+				setConfig("x2", c[1])
+				setConfig("y2", c[2])
+				setConfig("z2", c[3])
+			end
+		until loop
+		print("What is the arm length?")
+		print("(This is the sum of both each limb length. If you are using the base schematic, enter nothing.)")
+		local c = readValue()
+		if c[1] ~= nil then
+			setConfig("length", c[1])
+		end
+	elseif chr == 2 then
+		file.writeLine('shell.run("/programs/ship")')
+		repeat
+			local loop = true
+			print("What are the ship offset coordinates? (x, y, z)")
+			print("(These are the local coordinates of the ship's dock relative to the ship computer.)")
+			local c = readValue()
+			if c[1] ~= nil and c[2] ~= nil and c[3] ~= nil then
+				loop = false
+				setConfig("x1", c[1])
+				setConfig("y1", c[2])
+				setConfig("z1", c[3])
+			end
+		until loop
+	elseif chr == 3 then
+		file.writeLine('shell.run("/arm_bearing", 1)')
+	elseif chr == 4 then
+		file.writeLine('shell.run("/arm_bearing", 2)')
+	elseif chr == 5 then
+		file.writeLine('shell.run("/arm_bearing", 3)')
+	elseif chr == 6 then
+		file.writeLine('shell.run("/arm_bearing", 4)')
+	elseif chr == 7 then
+		file.writeLine('shell.run("/programs/gyro")')
+	end
+	file.close()
 end
 
 while true do
