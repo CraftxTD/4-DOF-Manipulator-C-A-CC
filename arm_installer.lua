@@ -86,7 +86,7 @@ local function readValue()
 		table.insert(values, tonumber(num))
 	end
 
-	return table
+	return values
 end
 
 local function setStartup(chr)
@@ -98,15 +98,16 @@ local function setStartup(chr)
 	if chr == 1 then
 		file.writeLine('shell.run("/programs/controller")')
 		repeat
-			local loop = true
+			local loop = false
 			print("What are the arm coordinates? (x, y, z)")
 			print("(These are the coordinates of the first block of the limb 1 bearing.)")
 			local c = readValue()
 			if c[1] ~= nil and c[2] ~= nil and c[3] ~= nil then
-				loop = false
+				loop = true
 				setConfig("x2", c[1])
 				setConfig("y2", c[2])
 				setConfig("z2", c[3])
+				print("Changing coordinates..")
 			end
 		until loop
 		print("What is the arm length?")
@@ -118,15 +119,16 @@ local function setStartup(chr)
 	elseif chr == 2 then
 		file.writeLine('shell.run("/programs/ship")')
 		repeat
-			local loop = true
+			local loop = false
 			print("What are the ship offset coordinates? (x, y, z)")
 			print("(These are the local coordinates of the ship's dock relative to the ship computer.)")
 			local c = readValue()
 			if c[1] ~= nil and c[2] ~= nil and c[3] ~= nil then
-				loop = false
+				loop = true
 				setConfig("x1", c[1])
 				setConfig("y1", c[2])
 				setConfig("z1", c[3])
+				print("Changing coordinates..")
 			end
 		until loop
 	elseif chr == 3 then
