@@ -224,7 +224,7 @@ function calculate.angles(processed)
 	-- The initial dock pivot angle is the same as the center pivot angle.
 	local dock_pivot = pivot_check(center_pivot, processed.pivot_angle)
 
-	if dock_pivot.bool then
+	if dock_pivot.bool and limb1_angle ~= nil and limb2_angle ~= nil then
 		-- Quick fix to optimize pivot angle rotation when above 180 degrees
 		if center_pivot.angle > 180 then
 			center_pivot.dir = -1

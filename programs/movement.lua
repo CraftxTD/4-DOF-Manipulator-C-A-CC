@@ -38,7 +38,7 @@ end
 -- (If false, doesn't go to ship)
 function movement.goto(data, modem)
   if not data.possible then
-  	print("! Ship cannot be safely docked, please align dock to the arm's center !")
+  	print("! Ship cannot be safely docked, please align dock or go closer to the arm's center !")
     modem.transmit(channels.SHIP_DOCK, channels.CONTROLLER, false)
     return false
   end
