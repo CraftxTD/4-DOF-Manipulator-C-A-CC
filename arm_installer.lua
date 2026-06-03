@@ -1,7 +1,7 @@
 --[[ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
                   4 DOF MANIPULATOR INSTALLER
-                          VERSION 0.2
+                          VERSION 0.21
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -]]
 
@@ -10,7 +10,7 @@ package.path = package.path .. ";/?.lua"
 local function firstMenu()
 	term.clear()
 	term.setCursorPos(1, 1)
-	print("Automatic Arm Refueler Installer v0.1")
+	print("Automatic Arm Refueler Installer v0.21")
 	print()
 	print("Which computer am I?")
 	print("1. Arm Controller")
