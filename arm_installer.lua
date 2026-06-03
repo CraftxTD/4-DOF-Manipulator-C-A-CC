@@ -111,7 +111,7 @@ local function setStartup(chr)
 			end
 		until loop
 		print("What is the arm length?")
-		print("(This is the sum of both each limb length. If you are using the base schematic, enter nothing.)")
+		print("(This is the sum of both each limb length. Default value is 28.")
 		local c = readValue()
 		if c[1] ~= nil then
 			setConfig("length", c[1])
