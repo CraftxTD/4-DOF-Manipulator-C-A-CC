@@ -2,6 +2,7 @@ package.path = package.path .. ";/?.lua"
 -- Gets position of the dock and sends it to the calculator
 local channels = require("protocols.channels")
 local network = require("protocols.network")
+local geometry = require("protocols.geometry")
 local modem = peripheral.find("modem") or error("No modem", 0)
 modem.open(channels.SHIP_DOCK)
 
@@ -53,6 +54,9 @@ while true do
 			x = x,
 			y = y,
 			z = z,
+			dock_x = geometry.SHIP_DOCK_OFFSET.x,
+			dock_y = geometry.SHIP_DOCK_OFFSET.y,
+			dock_z = geometry.SHIP_DOCK_OFFSET.z,
 		}
 
 		-- Transmit to the controller
