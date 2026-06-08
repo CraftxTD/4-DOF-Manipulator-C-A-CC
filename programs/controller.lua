@@ -12,14 +12,28 @@ modem.open(channels.CONTROLLER)
 -- FIX: Focus only on one ship at a time
 
 
-while true do
-	local raw = network.poll(channels.SHIP_DOCK, 1)
+local docked = false
+sleep(1)
+if redstone.getAnalogInput("front") == 15 then
+  docked = true
+else 
+  movement.calibrate(1, modem)
+end
 
-	print("Found ship.. ")
-	local data = calculate.angles(calculate.process(raw))
+
+while true do
+  local data, raw
+  if not(docked) then 
+	  raw = network.poll(channels.SHIP_DOCK, 1)
+
+	  print("Found ship.. ")
+	  data = calculate.angles(calculate.process(raw))
+  end
+  docked = false
 
   if movement.goto(data, modem) then
-    sleep(2)
+    -- Initial timer before checking comparator signal
+    sleep(10)
     while redstone.getAnalogInput("front") >= 1 do
       print("Dock is close..")
       if redstone.getAnalogInput("front") == 15 then
