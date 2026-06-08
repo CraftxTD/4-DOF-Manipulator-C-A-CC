@@ -1,7 +1,7 @@
 --[[ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
                   4 DOF MANIPULATOR INSTALLER
-                          VERSION 0.21
+                          VERSION 0.22
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -]]
 
@@ -10,7 +10,9 @@ package.path = package.path .. ";/?.lua"
 local function firstMenu()
 	term.clear()
 	term.setCursorPos(1, 1)
-	print("Automatic Arm Refueler Installer v0.21")
+	print("Automatic Arm Refueler Installer v0.22")
+	print("! WARNING: MAKE SURE THE GPS IS FULLY SETUP BEFORE PROCEEDING !")
+	sleep(1)
 	print()
 	print("Which computer am I?")
 	print("1. Arm Controller")
@@ -21,6 +23,17 @@ local function firstMenu()
 	print("6. Dock Bearing")
 	print("7. Gyro")
 	print("8. Exit")
+end
+
+local function angleMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	print("What default orientation do you want your arm to be in?")
+	sleep(1)
+	print("1. North (Default)")
+	print("2. West")
+	print("3. East")
+	print("4. South")
 end
 
 local function install()
@@ -95,21 +108,33 @@ local function setStartup(chr)
 	end
 	local file = fs.open("/startup.lua", "w")
 
+	term.clear()
 	if chr == 1 then
 		file.writeLine('shell.run("/programs/controller")')
+		local num = 1
 		repeat
-			local loop = false
-			print("What are the arm coordinates? (x, y, z)")
-			print("(These are the coordinates of the first block of the limb 1 bearing.)")
-			local c = readValue()
-			if c[1] ~= nil and c[2] ~= nil and c[3] ~= nil then
-				loop = true
-				setConfig("x2", c[1])
-				setConfig("y2", c[2])
-				setConfig("z2", c[3])
-				print("Changing coordinates..")
-			end
-		until loop
+			angleMenu()
+			num = readValue()[1]
+		until 1 <= num and num <= 4
+		if num == 1 then
+			setConfig("angle", 90)
+		elseif num == 2 then
+			setConfig("angle", 180)
+		elseif num == 3 then
+			setConfig("angle", 0)
+		elseif num == 4 then
+			setConfig("angle", 270)
+		end
+
+		print("Finding controller coordinates..")
+		local x2, y2, z2 = gps.locate()
+		print(string.format("Controller coordinates are: %f, %f, %f", x2, y2, z2))
+		setConfig("x2", x2)
+		setConfig("y2", y2)
+		setConfig("z2", z2)
+
+		sleep(1)
+		term.clear()
 		print("What is the arm length?")
 		print("(This is the sum of both each limb length. Default value is 28.")
 		local c = readValue()
@@ -143,6 +168,8 @@ local function setStartup(chr)
 		file.writeLine('shell.run("/programs/gyro")')
 	end
 	file.close()
+	sleep(1)
+	term.clear()
 end
 
 while true do
