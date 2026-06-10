@@ -13,7 +13,9 @@ modem.open(channels.CONTROLLER)
 
 
 local docked = false
-sleep(1)
+-- Incase other computers have not started up yet
+sleep(5)
+-- If chunk is loaded and arm is still docked
 if redstone.getAnalogInput("front") == 15 then
   docked = true
 else 
@@ -29,11 +31,12 @@ while true do
 	  print("Found ship.. ")
 	  data = calculate.angles(calculate.process(raw))
   end
-  docked = false
 
-  if movement.goto(data, modem) then
-    -- Initial timer before checking comparator signal
-    sleep(10)
+  if docked or (data ~= nil and movement.goto(data, modem)) then
+    if not(docked) then
+      -- Initial timer before checking comparator signal
+      sleep(10)
+    end
     while redstone.getAnalogInput("front") >= 1 do
       print("Dock is close..")
       if redstone.getAnalogInput("front") == 15 then
@@ -50,5 +53,6 @@ while true do
     print("Returning back to idle position..")
     movement.calibrate(1, modem)
   end
+  docked = false
   sleep(2)
 end
