@@ -8,5 +8,6 @@ return {
 	},
 	root_files = {
 		"arm_bearing.lua",
+		"configure.lua",
 	},
 }

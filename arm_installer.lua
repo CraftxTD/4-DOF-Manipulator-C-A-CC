@@ -1,18 +1,20 @@
 --[[ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
                   4 DOF MANIPULATOR INSTALLER
-                          VERSION 0.22
+                          VERSION 1.0
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -]]
+
+-- NOTE: Change raw github link to main branch before merging
 
 package.path = package.path .. ";/?.lua"
 
 local function firstMenu()
 	term.clear()
 	term.setCursorPos(1, 1)
-	print("Automatic Arm Refueler Installer v0.22")
+	print("Automatic Arm Refueler Installer v1.0")
 	print("! WARNING: MAKE SURE THE GPS IS FULLY SETUP BEFORE PROCEEDING !")
-	sleep(1)
+	sleep(0.5)
 	print()
 	print("Which computer am I?")
 	print("1. Arm Controller")
@@ -29,7 +31,7 @@ local function angleMenu()
 	term.clear()
 	term.setCursorPos(1, 1)
 	print("What default orientation do you want your arm to be in?")
-	sleep(1)
+	sleep(0.5)
 	print("1. North (Default)")
 	print("2. West")
 	print("3. East")
@@ -109,6 +111,7 @@ local function setStartup(chr)
 	local file = fs.open("/startup.lua", "w")
 
 	term.clear()
+	term.setCursorPos(1, 1)
 	if chr == 1 then
 		file.writeLine('shell.run("/programs/controller")')
 		local num = 1
@@ -133,8 +136,9 @@ local function setStartup(chr)
 		setConfig("y2", y2)
 		setConfig("z2", z2)
 
-		sleep(1)
+		sleep(0.5)
 		term.clear()
+		term.setCursorPos(1, 1)
 		print("What is the arm length?")
 		print("(This is the sum of both each limb length. Default value is 28.")
 		local c = readValue()
@@ -168,8 +172,9 @@ local function setStartup(chr)
 		file.writeLine('shell.run("/programs/gyro")')
 	end
 	file.close()
-	sleep(1)
+	sleep(0.5)
 	term.clear()
+	term.setCursorPos(1, 1)
 end
 
 while true do

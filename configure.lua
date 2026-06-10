@@ -1,0 +1,139 @@
+package.path = package.path .. ";/?.lua"
+
+local function firstMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	print("What do you want to configure?")
+	print("1. Arm Controller")
+	print("2. Ship Coordinates")
+	print("3. Reinstall")
+	print("4. Exit")
+end
+
+local function armMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	print("What do you want to configure?")
+	print("1. Arm Orientation")
+	print("2. Arm Length")
+	print("3. Exit")
+end
+
+local function angleMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	print("What new default orientation do you want your arm to be in?")
+	sleep(1)
+	print("1. North (Default)")
+	print("2. West")
+	print("3. East")
+	print("4. South")
+end
+
+local function readValue()
+	::restart::
+	print("")
+	write("> ")
+	local msg = read()
+	local values = {}
+
+	for num in string.gmatch(msg, "%S+") do
+		if tonumber(num) == nil then
+			print("Must be a number.")
+			goto restart
+		end
+		table.insert(values, tonumber(num))
+	end
+
+	return values
+end
+
+local function setConfig(name, value)
+	local file = fs.open("/protocols/geometry.lua", "r")
+	local text = file.readAll()
+	file.close()
+
+	text = text:gsub("local%s+" .. name .. "%s*=%s*[%d%.%-]+", "local " .. name .. " = " .. tostring(value))
+
+	file = fs.open("/protocols/geometry.lua", "w")
+	file.write(text)
+	file.close()
+end
+
+local function changeArm()
+	armMenu()
+	local _, chr = os.pullEvent("char")
+	while tonumber(chr) == nil do
+		_, chr = os.pullEvent("char")
+	end
+
+	chr = tonumber(chr)
+	sleep(0.5)
+	if chr == 3 then
+		return
+	elseif chr == 2 then
+		term.clear()
+		term.setCursorPos(1, 1)
+		print("What is the new arm length?")
+		print("(This is the sum of both each limb length. Default value is 28.")
+		local c = readValue()
+		if c[1] ~= nil then
+			setConfig("length", c[1])
+		end
+	elseif chr == 1 then
+		local num = 1
+		repeat
+			angleMenu()
+			num = readValue()[1]
+		until 1 <= num and num <= 4
+		if num == 1 then
+			setConfig("angle", 90)
+		elseif num == 2 then
+			setConfig("angle", 180)
+		elseif num == 3 then
+			setConfig("angle", 0)
+		elseif num == 4 then
+			setConfig("angle", 270)
+		end
+	end
+end
+
+local function changeShip()
+	term.clear()
+	term.setCursorPos(1, 1)
+	repeat
+		local loop = false
+		print("What are the new ship offset coordinates? (x, y, z)")
+		print("(These are the local coordinates of the ship's dock relative to the ship computer.)")
+		local c = readValue()
+		if c[1] ~= nil and c[2] ~= nil and c[3] ~= nil then
+			loop = true
+			setConfig("x1", c[1])
+			setConfig("y1", c[2])
+			setConfig("z1", c[3])
+			print("Changing coordinates..")
+		end
+	until loop
+end
+
+while true do
+	firstMenu()
+	local _, chr = os.pullEvent("char")
+	while tonumber(chr) == nil do
+		_, chr = os.pullEvent("char")
+	end
+
+	chr = tonumber(chr)
+	if chr == 4 then
+		break
+	else
+		if chr == 1 then
+			changeArm()
+		elseif chr == 2 then
+			changeShip()
+		elseif chr == 3 then
+			shell.run("pastebin run dizp91ve")
+			break
+		end
+	end
+end
