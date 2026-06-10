@@ -175,7 +175,7 @@ function calculate.process(raw)
 	-- Convention YXZ
 	rotation_matrix = matrix.mul(Ry, matrix.mul(Rx, Rz))
 
-	local ship_dock_offset = vector.new(raw.dock_x, raw.dock_z, raw.dock_z)
+	local ship_dock_offset = vector.new(raw.dock_x, raw.dock_y, raw.dock_z)
 	local local_dock_vector = get_offset(geometry.DOCK_OFFSET:add(ship_dock_offset))
 	print(string.format("local vector: %s", local_dock_vector:tostring()))
 	local global_dock_vector = local_dock_vector:add(vector.new(raw.x, raw.y, raw.z))
