@@ -39,6 +39,7 @@ while true do
     end
     while redstone.getAnalogInput("front") >= 1 do
       print("Dock is close..")
+      sleep(0.5)
       if redstone.getAnalogInput("front") == 15 then
         while redstone.getAnalogInput("front") == 15 do
           print("Ship currently docked..")

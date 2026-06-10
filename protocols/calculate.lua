@@ -227,7 +227,11 @@ function calculate.angles(processed)
 	if dock_pivot.bool and limb1_angle ~= nil and limb2_angle ~= nil then
 		-- Quick fix to optimize pivot angle rotation when above 180 degrees
 		if center_pivot.angle > 180 then
-			center_pivot.dir = -1
+			if center_pivot.dir == -1 then
+				center_pivot.dir = 1
+			else
+				center_pivot.dir = -1
+			end
 			center_pivot.angle = center_pivot.angle - 360
 		end
 		return {
