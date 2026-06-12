@@ -17,7 +17,6 @@ function movement.calibrate(arg, modem)
 	elseif arg == 1 then
 		degrees[1], degrees[2], degrees[3] = math.deg(geometry.LIMB_1), math.deg(geometry.LIMB_2), math.deg(geometry.INITIAL_ARM_ANGLE) - 90
 	end
-
 	print("Rotating limb 1 bearing..")
 	modem.transmit(channels.LIMB_1, channels.CONTROLLER, degrees[1])
 

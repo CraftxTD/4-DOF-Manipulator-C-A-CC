@@ -48,6 +48,26 @@ local function dirMenu()
 	print("4. Back")
 end
 
+local function orientMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	local angle = peripheral.find("navigation_table").getRelativeAngle()
+	sleep(0.2)
+	print("Navigation Table Angle: ", angle)
+	print("! If your ship is not pointed towards the north, this angle is not accurate !")
+	print("If angle is near 270, you assembled your ship facing north.")
+	print("If angle is near 360, you assembled your ship facing east.")
+	print("If angle is near 180, you assembled your ship facing west.")
+	print("If angle is near 90, you assembled your ship facing south.")
+	print("")
+	print("What orientation did you assemble your ship?")
+	print("1. North")
+	print("2. East")
+	print("3. West")
+	print("4. South")
+	print("5. Restart")
+end
+
 local function install()
 	print("Installing files..")
 	local base = "https://raw.githubusercontent.com/CraftxTD/4-DOF-Manipulator-C-A-CC/refs/heads/vanilla-gps/"
@@ -190,6 +210,31 @@ local function setStartup(chr)
 				setConfig("ship", 90)
 			end
 		until loop
+
+		term.clear()
+		term.setCursorPos(1, 1)
+		repeat
+			print("Finding navigation table angle to determine orientation of the ship..")
+			print("Please orient your ship until the table's arrow is in line with your ship.")
+			print("Press 1 once correctly oriented..")
+			local c = readValue()
+		until c[1] == 1
+
+		local num = {}
+		repeat
+			orientMenu()
+			num = readValue()
+		until 1 <= num[1] and num[1] <= 4
+
+		if num[1] == 1 then
+			setConfig("orientation", 0)
+		elseif num[1] == 2 then
+			setConfig("orientation", -90)
+		elseif num[1] == 3 then
+			setConfig("orientation", 90)
+		elseif num[1] == 4 then
+			setConfig("orientation", 180)
+		end
 	elseif chr == 3 then
 		file.writeLine('shell.run("/arm_bearing", 1)')
 	elseif chr == 4 then

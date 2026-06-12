@@ -25,7 +25,8 @@ local function shipMenu()
 	print("What do you want to configure?")
 	print("1. Ship Coordinates")
 	print("2. Dock Direction")
-	print("3. Exit")
+	print("3. Ship Orientation (Before assembly)")
+	print("4. Exit")
 end
 
 local function angleMenu()
@@ -47,6 +48,26 @@ local function dirMenu()
 	print("2. Left")
 	print("3. Right")
 	print("4. Back")
+end
+
+local function orientMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	local angle = peripheral.find("navigation_table").getRelativeAngle()
+	sleep(0.2)
+	print("Navigation Table Angle: ", angle)
+	print("! If your ship is not pointed towards the north, this angle is not accurate !")
+	print("If angle is near 270, you assembled your ship facing north.")
+	print("If angle is near 360, you assembled your ship facing east.")
+	print("If angle is near 180, you assembled your ship facing west.")
+	print("If angle is near 90, you assembled your ship facing south.")
+	print("")
+	print("What orientation did you assemble your ship?")
+	print("1. North")
+	print("2. East")
+	print("3. West")
+	print("4. South")
+	print("5. Restart")
 end
 
 local function readValue()
@@ -124,8 +145,33 @@ local function changeShip()
 	end
 
 	chr = tonumber(chr)
-	if chr == 3 then
+	if chr == 4 then
 		return
+	elseif chr == 3 then
+		term.clear()
+		term.setCursorPos(1, 1)
+		repeat
+			print("Finding navigation table angle to determine orientation of the ship..")
+			print("Please orient your ship until the table's arrow is in line with your ship.")
+			print("Press 1 once correctly oriented..")
+			local c = readValue()
+		until c[1] == 1
+
+		local num = {}
+		repeat
+			orientMenu()
+			num = readValue()
+		until 1 <= num[1] and num[1] <= 4
+
+		if num[1] == 1 then
+			setConfig("orientation", 0)
+		elseif num[1] == 2 then
+			setConfig("orientation", -90)
+		elseif num[1] == 3 then
+			setConfig("orientation", 90)
+		elseif num[1] == 4 then
+			setConfig("orientation", 180)
+		end
 	elseif chr == 2 then
 		repeat
 			local loop = false
@@ -145,7 +191,7 @@ local function changeShip()
 				setConfig("ship", 90)
 			end
 		until loop
-	elseif chr == 3 then
+	elseif chr == 1 then
 		repeat
 			local loop = false
 			print("What are the new ship offset coordinates? (x, y, z)")

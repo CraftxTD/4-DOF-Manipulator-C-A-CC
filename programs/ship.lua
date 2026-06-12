@@ -49,7 +49,7 @@ while true do
 	if redstone.getInput("left") then
 		local x, y, z = gps.locate(1, false)
 		local raw = {
-			north = north.getRelativeAngle(),
+			north = (north.getRelativeAngle() + geometry.ORIENTATION) % 360,
 			gimbal = gimbal.getAngles(),
 			x = x,
 			y = y,
