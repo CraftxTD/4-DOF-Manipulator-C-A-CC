@@ -15,7 +15,7 @@ function movement.calibrate(arg, modem)
 		degrees[1], degrees[2], degrees[3] = 0, 0, 0
 	-- Go to neutral position
 	elseif arg == 1 then
-		degrees[1], degrees[2], degrees[3] = math.deg(geometry.LIMB_1), math.deg(geometry.LIMB_2), 0
+		degrees[1], degrees[2], degrees[3] = math.deg(geometry.LIMB_1), math.deg(geometry.LIMB_2), math.deg(geometry.INITIAL_ARM_ANGLE) - 90
 	end
 
 	print("Rotating limb 1 bearing..")
@@ -25,7 +25,7 @@ function movement.calibrate(arg, modem)
 	modem.transmit(channels.LIMB_2, channels.CONTROLLER, degrees[2])
 
 	print("Rotating dock bearing..")
-	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, degrees[3])
+	modem.transmit(channels.LIMB_DOCK_BEARING, channels.CONTROLLER, 0)
 
 	-- Waits until everything has moved
 	print("Rotating ring bearing..")

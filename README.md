@@ -7,7 +7,7 @@ This is a project that implements a 4 DOF Manipulator in Minecraft using **Creat
 To download, copy the following commands into your Minecraft computer terminal: 
 
 ```bash
-pastebin run dizp91ve
+pastebin run rPcQdWUv 
 ```
 
 This project includes LuaMatrix (http://luamatrix.luaforge.net/),

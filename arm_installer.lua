@@ -14,7 +14,7 @@ local function firstMenu()
 	term.setCursorPos(1, 1)
 	print("Automatic Arm Refueler Installer v1.0")
 	print("! WARNING: MAKE SURE THE GPS IS FULLY SETUP BEFORE PROCEEDING !")
-	sleep(0.5)
+	sleep(0.2)
 	print()
 	print("Which computer am I?")
 	print("1. Arm Controller")
@@ -31,7 +31,6 @@ local function angleMenu()
 	term.clear()
 	term.setCursorPos(1, 1)
 	print("What default orientation do you want your arm to be in?")
-	sleep(0.5)
 	print("1. North (Default)")
 	print("2. West")
 	print("3. East")
@@ -43,7 +42,6 @@ local function dirMenu()
 	term.setCursorPos(1, 1)
 	print("What direction is the ship dock facing?")
 	print("(Relative to the magnet table while un-assembled, front is facing forward.)")
-	sleep(0.5)
 	print("1. Front")
 	print("2. Left")
 	print("3. Right")
@@ -148,7 +146,6 @@ local function setStartup(chr)
 		setConfig("y2", y2)
 		setConfig("z2", z2)
 
-		sleep(0.5)
 		term.clear()
 		term.setCursorPos(1, 1)
 		print("What is the arm length?")
@@ -181,7 +178,7 @@ local function setStartup(chr)
 			local c = readValue()
 			if c[1] == 1 then
 				loop = true
-				setConfig("ship", 90)
+				setConfig("ship", -90)
 			elseif c[1] == 2 then
 				loop = true
 				setConfig("ship", 0)
@@ -190,7 +187,7 @@ local function setStartup(chr)
 				setConfig("ship", 180)
 			elseif c[1] == 4 then
 				loop = true
-				setConfig("ship", -90)
+				setConfig("ship", 90)
 			end
 		until loop
 	elseif chr == 3 then
@@ -205,7 +202,6 @@ local function setStartup(chr)
 		file.writeLine('shell.run("/programs/gyro")')
 	end
 	file.close()
-	sleep(0.5)
 	term.clear()
 	term.setCursorPos(1, 1)
 end

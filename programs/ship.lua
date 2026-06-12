@@ -68,7 +68,7 @@ while true do
 		if type(success) ~= "nil" then
 			if success then
 				play(1)
-				local undocked = network.poll(channels.CONTROLLER)
+				local undocked = network.poll(channels.CONTROLLER, 1)
 				if undocked then
 					play(3)
 				end

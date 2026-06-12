@@ -185,20 +185,22 @@ function calculate.process(raw)
 		matrix:new({ { geometry.DOCK_OFFSET.x }, { geometry.DOCK_OFFSET.y }, { geometry.DOCK_OFFSET.z } })
 	dock_offset = matrix.mul(dock_dir, dock_offset)
 	dock_offset = vector.new(dock_offset[1][1], dock_offset[2][1], dock_offset[3][1])
+	print("dock_offset: ", dock_offset)
 
 	local ship_dock_offset = vector.new(raw.dock_x, raw.dock_y, raw.dock_z)
-	local local_dock_vector = get_offset(geometry.DOCK_OFFSET:add(ship_dock_offset))
+	local local_dock_vector = get_offset(dock_offset:add(ship_dock_offset))
 	print(string.format("local vector: %s", local_dock_vector:tostring()))
 	local global_dock_vector = local_dock_vector:add(vector.new(raw.x, raw.y, raw.z))
 	print(string.format("global vector: %s", global_dock_vector:tostring()))
 	print(string.format("pivot_angle: %f", math.deg(ship_xz)))
 
-	if raw.dock_dir == 90 then
-		ship_xz = ship_xz - 90
-	elseif raw.dock_dir == -90 then
-		ship_xz = ship_xz + 90
-	elseif raw.dock_dir == 180 then
-		ship_xz = ship_xz - 180
+	print(raw.dock_dir)
+	if raw.dock_dir == -math.pi / 2 then
+		ship_xz = ship_xz - math.pi / 2
+	elseif raw.dock_dir == math.pi / 2 then
+		ship_xz = ship_xz + math.pi / 2
+	elseif raw.dock_dir == math.pi then
+		ship_xz = ship_xz - math.pi
 	end
 
 	return {
