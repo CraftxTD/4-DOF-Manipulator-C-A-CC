@@ -106,22 +106,6 @@ local function pivot_check(center_pivot, ship_pivot)
 	return { bool = true, angle = (ship_pivot + math.pi) % (math.pi * 2) - local_pos }
 end
 
--- All ships have the same channels, thus ships need to be filtered.
--- Uses magnitude of distance between two computers to determine
--- if they both belong to the same ship.
-function calculate.filter_ship(position, dock_to_pivot)
-	local magnitude = math.sqrt(
-		math.pow(position.x1 - position.x2, 2)
-			+ math.pow(position.y1 - position.y2, 2)
-			+ math.pow(position.z1 - position.z2, 2)
-	)
-	if magnitude > dock_to_pivot then
-		return false
-	else
-		return true
-	end
-end
-
 -- Calculates the distance and angle of the dock relative to the center of the arm
 -- Uses the raw values and produces the dock vector
 function calculate.process(raw)

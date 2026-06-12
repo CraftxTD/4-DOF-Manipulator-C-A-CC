@@ -224,7 +224,7 @@ while true do
 		elseif chr == 2 then
 			changeShip()
 		elseif chr == 3 then
-			shell.run("pastebin run rPcQdWUv")
+			shell.run("pastebin run ZGaypFce")
 			break
 		end
 	end

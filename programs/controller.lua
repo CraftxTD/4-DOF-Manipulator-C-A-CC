@@ -7,11 +7,6 @@ local movement = require("programs.movement")
 local modem = peripheral.find("modem") or error("No modem", 0)
 modem.open(channels.CONTROLLER)
 
--- TODO: to change angles when already at a select location at calculate.
--- Maybe use constant values that change?
--- FIX: Focus only on one ship at a time
-
-
 local docked = false
 -- Incase other computers have not started up yet
 sleep(5)
