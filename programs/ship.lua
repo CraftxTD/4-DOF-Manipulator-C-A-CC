@@ -57,6 +57,7 @@ while true do
 			dock_x = geometry.SHIP_DOCK_OFFSET.x,
 			dock_y = geometry.SHIP_DOCK_OFFSET.y,
 			dock_z = geometry.SHIP_DOCK_OFFSET.z,
+			dock_dir = geometry.DOCK_DIR,
 		}
 
 		-- Transmit to the controller

@@ -5,7 +5,7 @@ local function firstMenu()
 	term.setCursorPos(1, 1)
 	print("What do you want to configure?")
 	print("1. Arm Controller")
-	print("2. Ship Coordinates")
+	print("2. Ship")
 	print("3. Reinstall")
 	print("4. Exit")
 end
@@ -19,15 +19,36 @@ local function armMenu()
 	print("3. Exit")
 end
 
+local function shipMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	print("What do you want to configure?")
+	print("1. Ship Coordinates")
+	print("2. Dock Direction")
+	print("3. Exit")
+end
+
 local function angleMenu()
 	term.clear()
 	term.setCursorPos(1, 1)
 	print("What new default orientation do you want your arm to be in?")
-	sleep(1)
+	sleep(0.5)
 	print("1. North (Default)")
 	print("2. West")
 	print("3. East")
 	print("4. South")
+end
+
+local function dirMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	print("What direction is the ship dock facing?")
+	print("(Relative to the magnet table while un-assembled, front is facing forward.)")
+	sleep(0.5)
+	print("1. Front")
+	print("2. Left")
+	print("3. Right")
+	print("4. Back")
 end
 
 local function readValue()
@@ -99,21 +120,49 @@ local function changeArm()
 end
 
 local function changeShip()
-	term.clear()
-	term.setCursorPos(1, 1)
-	repeat
-		local loop = false
-		print("What are the new ship offset coordinates? (x, y, z)")
-		print("(These are the local coordinates of the ship's dock relative to the ship computer.)")
-		local c = readValue()
-		if c[1] ~= nil and c[2] ~= nil and c[3] ~= nil then
-			loop = true
-			setConfig("x1", c[1])
-			setConfig("y1", c[2])
-			setConfig("z1", c[3])
-			print("Changing coordinates..")
-		end
-	until loop
+	shipMenu()
+	local _, chr = os.pullEvent("char")
+	while tonumber(chr) == nil do
+		_, chr = os.pullEvent("char")
+	end
+
+	chr = tonumber(chr)
+	if chr == 3 then
+		return
+	elseif chr == 2 then
+		repeat
+			local loop = false
+			dirMenu()
+			local c = readValue()
+			if c[1] == 1 then
+				loop = true
+				setConfig("ship", 90)
+			elseif c[1] == 2 then
+				loop = true
+				setConfig("ship", 0)
+			elseif c[1] == 3 then
+				loop = true
+				setConfig("ship", 180)
+			elseif c[1] == 4 then
+				loop = true
+				setConfig("ship", -90)
+			end
+		until loop
+	elseif chr == 3 then
+		repeat
+			local loop = false
+			print("What are the new ship offset coordinates? (x, y, z)")
+			print("(These are the local coordinates of the ship's dock relative to the ship computer.)")
+			local c = readValue()
+			if c[1] ~= nil and c[2] ~= nil and c[3] ~= nil then
+				loop = true
+				setConfig("x1", c[1])
+				setConfig("y1", c[2])
+				setConfig("z1", c[3])
+				print("Changing coordinates..")
+			end
+		until loop
+	end
 end
 
 while true do
@@ -125,7 +174,7 @@ while true do
 
 	chr = tonumber(chr)
 	if chr == 4 then
-		break
+		shell.run("reboot")
 	else
 		if chr == 1 then
 			changeArm()

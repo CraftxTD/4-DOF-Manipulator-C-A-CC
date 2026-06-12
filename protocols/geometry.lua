@@ -7,6 +7,11 @@ local y2 = 116
 local z2 = 423
 local length = 28
 local angle = 90
+local ship = 0
+-- 0: Left
+-- -90: Back
+-- 90: Front
+-- 180: Right
 local offset = vector.new(0, 7, -2)
 -- if angle == 0 then
 -- 	offset = vector.new(-2, 7, 0)
@@ -36,6 +41,8 @@ return {
 	-- These coordinates are then converted to the ship dock's
 	-- local coordinates.
 	DOCK_OFFSET = vector.new(-4.5, 1.5, 0),
+	-- For use with the ship only
+	DOCK_DIR = math.rad(ship),
 
 	-- Idle limb angles
 	LIMB_1 = math.rad(140),

@@ -38,6 +38,18 @@ local function angleMenu()
 	print("4. South")
 end
 
+local function dirMenu()
+	term.clear()
+	term.setCursorPos(1, 1)
+	print("What direction is the ship dock facing?")
+	print("(Relative to the magnet table while un-assembled, front is facing forward.)")
+	sleep(0.5)
+	print("1. Front")
+	print("2. Left")
+	print("3. Right")
+	print("4. Back")
+end
+
 local function install()
 	print("Installing files..")
 	local base = "https://raw.githubusercontent.com/CraftxTD/4-DOF-Manipulator-C-A-CC/refs/heads/vanilla-gps/"
@@ -160,6 +172,27 @@ local function setStartup(chr)
 				print("Changing coordinates..")
 			end
 		until loop
+
+		term.clear()
+		term.setCursorPos(1, 1)
+		repeat
+			local loop = false
+			dirMenu()
+			local c = readValue()
+			if c[1] == 1 then
+				loop = true
+				setConfig("ship", 90)
+			elseif c[1] == 2 then
+				loop = true
+				setConfig("ship", 0)
+			elseif c[1] == 3 then
+				loop = true
+				setConfig("ship", 180)
+			elseif c[1] == 4 then
+				loop = true
+				setConfig("ship", -90)
+			end
+		until loop
 	elseif chr == 3 then
 		file.writeLine('shell.run("/arm_bearing", 1)')
 	elseif chr == 4 then
@@ -186,7 +219,7 @@ while true do
 
 	chr = tonumber(chr)
 	if chr == 8 then
-		break
+		shell.run("reboot")
 	else
 		install()
 		setStartup(chr)
