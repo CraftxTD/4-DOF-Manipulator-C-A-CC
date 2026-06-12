@@ -8,12 +8,16 @@ local calculate = require("protocols.calculate")
 local args = { ... }
 local localChannel
 if args[1] == "1" then
+	print("COMPUTER: RING BEARING")
 	localChannel = channels.LIMB_RING_BEARING
 elseif args[1] == "2" then
+	print("COMPUTER: LIMB 1")
 	localChannel = channels.LIMB_1
 elseif args[1] == "3" then
+	print("COMPUTER: LIMB 2")
 	localChannel = channels.LIMB_2
 elseif args[1] == "4" then
+	print("COMPUTER: LIMB DOCK BEARING")
 	localChannel = channels.LIMB_DOCK_BEARING
 end
 
