@@ -17,6 +17,7 @@ if redstone.getAnalogInput("front") == 15 then
 else 
   speed.setTargetSpeed(-32)
   movement.calibrate(1, modem)
+  sleep(4)
   speed.setTargetSpeed(-4)
 end
 
