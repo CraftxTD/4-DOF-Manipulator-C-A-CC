@@ -4,6 +4,7 @@ local network = require("protocols.network")
 local calculate = require("protocols.calculate")
 local movement = require("programs.movement")
 
+local speed = peripheral.find("Create_RotationSpeedController")
 local modem = peripheral.find("modem") or error("No modem", 0)
 modem.open(channels.CONTROLLER)
 
@@ -14,7 +15,9 @@ sleep(5)
 if redstone.getAnalogInput("front") == 15 then
   docked = true
 else 
+  speed.setTargetSpeed(-32)
   movement.calibrate(1, modem)
+  speed.setTargetSpeed(-4)
 end
 
 
