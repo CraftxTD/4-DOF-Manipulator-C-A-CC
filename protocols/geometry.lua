@@ -16,7 +16,7 @@ local ship = 0
 -- 180: Right
 -- Ship orientation when assembled
 local orientation = 0
-local offset = vector.new(0, 7, -2)
+local offset = vector.new(0, 9, 0)
 
 return {
 	-- Coordinates of the first block in the limb 1 bearing.
