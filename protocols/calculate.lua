@@ -244,6 +244,7 @@ function calculate.angles(processed)
 		end
 		return {
 			possible = true,
+			toofar = false,
 			v_angle = calculate.deg_direction(v_angle),
 			limb1_angle = calculate.deg_direction(-limb1_angle),
 			limb2_angle = calculate.deg_direction(-limb2_angle),
@@ -251,8 +252,15 @@ function calculate.angles(processed)
 			dock_pivot = calculate.deg_direction(dock_pivot.angle),
 		}
 	else
+		if m <= geometry.ARM_RADIUS then
+			return {
+				possible = false,
+				toofar = true,
+			}
+		end
 		return {
 			possible = false,
+			toofar = false,
 		}
 	end
 end
