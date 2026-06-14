@@ -228,8 +228,11 @@ function calculate.angles(processed)
 	-- Calculate dock pivot angle and direction.
 	-- The initial dock pivot angle is the same as the center pivot angle.
 	local dock_pivot = pivot_check(center_pivot, processed.pivot_angle)
+	---@type ccTweaked.Vector
+	local distance = (processed.ship_vector - geometry.ARM)
+	local m = distance:length()
 
-	if dock_pivot.bool and limb1_angle ~= nil and limb2_angle ~= nil then
+	if dock_pivot.bool and limb1_angle ~= nil and limb2_angle ~= nil and m <= geometry.ARM_RADIUS then
 		-- Quick fix to optimize pivot angle rotation when above 180 degrees
 		if center_pivot.angle > 180 then
 			if center_pivot.dir == -1 then
