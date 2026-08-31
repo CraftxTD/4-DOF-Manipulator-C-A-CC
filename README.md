@@ -4,11 +4,13 @@ This is a project that implements a 4 DOF Manipulator in Minecraft using **Creat
 ![Demo](./demo.gif)
 
 ### Installation
-To download, copy the following commands into your Minecraft computer terminal and follow the Youtube tutorial: 
+To download, copy the following commands into your Minecraft computer terminal: 
 
 ```bash
 pastebin run ZGaypFce 
 ```
+
+..and follow the Youtube tutorial: https://youtu.be/t3eGSWPGveU?si=KbNEImJwXV6CYzpO and 
 
 This project includes LuaMatrix (http://luamatrix.luaforge.net/),
 which is licensed under the MIT License.
