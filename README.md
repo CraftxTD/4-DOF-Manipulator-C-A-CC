@@ -10,7 +10,7 @@ To download, copy the following commands into your Minecraft computer terminal:
 pastebin run ZGaypFce 
 ```
 
-..and follow the Youtube tutorial: https://youtu.be/t3eGSWPGveU?si=KbNEImJwXV6CYzpO and 
+..and follow the Youtube tutorial: https://youtu.be/t3eGSWPGveU?si=KbNEImJwXV6CYzpO 
 
 This project includes LuaMatrix (http://luamatrix.luaforge.net/),
 which is licensed under the MIT License.
